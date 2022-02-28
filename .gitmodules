@@ -1,0 +1,36 @@
+[submodule "extern/trimesh2"]
+	path = extern/trimesh2
+	url = https://github.com/Forceflow/trimesh2.git
+[submodule "extern/pystring"]
+	path = extern/pystring
+	url = https://github.com/chitalu/pystring.git
+[submodule "extern/bullet-blender-exporter"]
+	path = extern/bullet-blender-exporter
+	url = https://github.com/xu-xionglong/bullet-blender-exporter.git
+[submodule "extern/json"]
+	path = extern/json
+	url = https://github.com/nlohmann/json.git
+[submodule "extern/openvdb"]
+	path = extern/openvdb
+	url = https://github.com/AcademySoftwareFoundation/openvdb.git
+[submodule "extern/MeshDecimation"]
+	path = extern/MeshDecimation
+	url = https://github.com/kmammou/MeshDecimation.git
+[submodule "extern/Fast-Quadric-Mesh-Simplification"]
+	path = extern/Fast-Quadric-Mesh-Simplification
+	url = https://github.com/sp4cerat/Fast-Quadric-Mesh-Simplification.git
+[submodule "extern/voro"]
+	path = extern/voro
+	url = https://github.com/chr1shr/voro.git
+[submodule "extern/earcut.hpp"]
+	path = extern/earcut.hpp
+	url = https://github.com/mapbox/earcut.hpp.git
+[submodule "extern/libigl"]
+	path = extern/libigl
+	url = https://github.com/libigl/libigl.git
+[submodule "extern/bullet3"]
+	path = extern/bullet3
+	url = https://github.com/chitalu/bullet3.git
+[submodule "extern/mcut"]
+	path = extern/mcut
+	url = https://github.com/cutdigital/mcut.git
