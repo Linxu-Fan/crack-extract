@@ -1,0 +1,120 @@
+
+#
+# pystring
+#
+set (PYSTRING_PROJECT_DIR ${EXTERN_PROJECTS_DIR}/pystring CACHE STRING "location of pystring" )
+set (PYSTRING_INCLUDE_DIRS ${PYSTRING_PROJECT_DIR} CACHE INTERNAL "pystring include directories")
+set (PYSTRING_LIBRARIES pystring CACHE INTERNAL  "pystring libraries")
+
+add_library(pystring STATIC ${PYSTRING_PROJECT_DIR}/pystring.cpp)
+
+target_include_directories(pystring PUBLIC ${PYSTRING_INCLUDE_DIRS})
+
+#
+# trimesh
+#
+set(TRIMESH_PROJECT_DIR ${EXTERN_PROJECTS_DIR}/trimesh2 CACHE STRING "location of trimesh2" )
+set (TRIMESH_INCLUDE_DIRS ${TRIMESH_PROJECT_DIR}/include CACHE INTERNAL "trimesh2 include directories")
+set (TRIMESH_LIBRARIES trimesh2 CACHE INTERNAL  "trimesh2 libraries")
+set ( SRC_DIR ${TRIMESH_PROJECT_DIR}/libsrc)
+
+add_library(trimesh2 STATIC
+  ${SRC_DIR}/TriMesh_bounding.cc
+	${SRC_DIR}/TriMesh_connectivity.cc
+  ${SRC_DIR}/TriMesh_curvature.cc
+  ${SRC_DIR}/TriMesh_io.cc
+  ${SRC_DIR}/TriMesh_grid.cc
+  ${SRC_DIR}/TriMesh_normals.cc
+  ${SRC_DIR}/TriMesh_pointareas.cc
+  ${SRC_DIR}/TriMesh_stats.cc
+  ${SRC_DIR}/TriMesh_tstrips.cc
+  ${SRC_DIR}/GLCamera.cc
+  ${SRC_DIR}/ICP.cc
+  ${SRC_DIR}/KDtree.cc
+  ${SRC_DIR}/conn_comps.cc
+  ${SRC_DIR}/diffuse.cc
+  ${SRC_DIR}/edgeflip.cc
+  ${SRC_DIR}/faceflip.cc
+  ${SRC_DIR}/filter.cc
+  ${SRC_DIR}/overlap.cc
+  ${SRC_DIR}/remove.cc
+  ${SRC_DIR}/reorder_verts.cc
+  ${SRC_DIR}/subdiv.cc
+)
+
+target_include_directories(trimesh2 PUBLIC ${TRIMESH_INCLUDE_DIRS})
+
+#
+# libigl
+#
+set(LIBIGL_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libigl)
+#add_subdirectory(${LIBIGL_ROOT_DIR})
+
+#set (LIBIGL_LIBRARIES igl::core CACHE STRING "linigl libs")
+set (LIBIGL_INCLUDE_DIR ${LIBIGL_ROOT_DIR}/include CACHE STRING "libigl includes")
+
+#
+# json
+#
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+
+add_subdirectory(json)
+
+#
+# OpenVDB
+#
+add_subdirectory(openvdb)
+
+set (OPENVDB_PROJECT_DIR ${EXTERN_PROJECTS_DIR}/openvdb CACHE STRING "location of openvdb" )
+set (OPENVDB_INCLUDE_DIRS ${OPENVDB_PROJECT_DIR} CACHE INTERNAL "openvdb include directories")
+set (OPENVDB_LIBRARIES openvdb CACHE INTERNAL  "openvdb libraries")
+
+#
+# MeshDecimation /home/floyd/mpm-fracture/extern/Fast-Quadric-Mesh-Simplification/src.cmd
+#
+set(MESH_DECIMATION_PROJECT_DIR ${EXTERN_PROJECTS_DIR}/Fast-Quadric-Mesh-Simplification CACHE STRING "location of Fast-Quadric-Mesh-Simplification" )
+set (MESH_DECIMATION_INCLUDE_DIRS ${MESH_DECIMATION_PROJECT_DIR}/src.cmd CACHE INTERNAL "Fast-Quadric-Mesh-Simplification include directories")
+
+#
+# Voro++
+#
+
+add_subdirectory(voro)
+set(VORO_PLUS_PLUS_INCLUDE_DIRS ${EXTERN_PROJECTS_DIR}/voro/src CACHE INTERNAL "") 
+set(VORO_PLUS_PLUS_LIBRARIES voro++ CACHE INTERNAL "") 
+
+#
+# MCUT
+#
+
+set (MCUT_BUILD_WITH_ARBITRARY_PRECISION_NUMBERS ON CACHE INTERNAL "")
+set (MCUT_BUILD_WITH_MULTITHREADING OFF CACHE INTERNAL "")
+
+add_subdirectory(mcut)
+set(MCUT_INCLUDE_DIRS ${EXTERN_PROJECTS_DIR}/mcut/include CACHE INTERNAL "") 
+set(MCUT_LIBRARIES mcut CACHE INTERNAL "") 
+
+#
+# Earcut (triangulation lib)
+#
+
+set(EARCUT_INCLUDE_DIRS ${EXTERN_PROJECTS_DIR}/earcut.hpp/include CACHE INTERNAL "") 
+
+#
+# triangle (triangle lib)
+#
+
+add_subdirectory(triangle)
+
+#
+# Bullet3
+#
+if (NOT BULLET2_MULTITHREADING)
+  set (BULLET2_MULTITHREADING ON)
+endif()
+
+if (NOT BULLET2_USE_TBB_MULTITHREADING)
+  set (BULLET2_USE_TBB_MULTITHREADING ON)
+endif()
+
+add_subdirectory(bullet3)

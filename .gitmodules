@@ -4,12 +4,6 @@
 [submodule "extern/pystring"]
 	path = extern/pystring
 	url = https://github.com/chitalu/pystring.git
-[submodule "extern/bullet-blender-exporter"]
-	path = extern/bullet-blender-exporter
-	url = https://github.com/xu-xionglong/bullet-blender-exporter.git
-[submodule "extern/json"]
-	path = extern/json
-	url = https://github.com/nlohmann/json.git
 [submodule "extern/openvdb"]
 	path = extern/openvdb
 	url = https://github.com/AcademySoftwareFoundation/openvdb.git
@@ -28,9 +22,6 @@
 [submodule "extern/libigl"]
 	path = extern/libigl
 	url = https://github.com/libigl/libigl.git
-[submodule "extern/bullet3"]
-	path = extern/bullet3
-	url = https://github.com/chitalu/bullet3.git
 [submodule "extern/mcut"]
 	path = extern/mcut
 	url = https://github.com/cutdigital/mcut.git
