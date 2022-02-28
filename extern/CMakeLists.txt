@@ -53,12 +53,6 @@ set(LIBIGL_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libigl)
 #set (LIBIGL_LIBRARIES igl::core CACHE STRING "linigl libs")
 set (LIBIGL_INCLUDE_DIR ${LIBIGL_ROOT_DIR}/include CACHE STRING "libigl includes")
 
-#
-# json
-#
-set(JSON_BuildTests OFF CACHE INTERNAL "")
-
-add_subdirectory(json)
 
 #
 # OpenVDB
@@ -106,15 +100,3 @@ set(EARCUT_INCLUDE_DIRS ${EXTERN_PROJECTS_DIR}/earcut.hpp/include CACHE INTERNAL
 
 add_subdirectory(triangle)
 
-#
-# Bullet3
-#
-if (NOT BULLET2_MULTITHREADING)
-  set (BULLET2_MULTITHREADING ON)
-endif()
-
-if (NOT BULLET2_USE_TBB_MULTITHREADING)
-  set (BULLET2_USE_TBB_MULTITHREADING ON)
-endif()
-
-add_subdirectory(bullet3)
