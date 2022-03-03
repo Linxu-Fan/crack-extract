@@ -1,8 +1,7 @@
 
-#include "mpm-fracture/object.h"
-#include "mpm-fracture/mpm-fracture.h"
-#include "mpm-fracture/extractCrack.h"
-#include "mpm-fracture/utils.h" // must be included first because of "#define _USE_MATH_DEFINES" on windows
+#include "crackExtraction/object.h"
+#include "crackExtraction/extractCrack.h"
+#include "crackExtraction/utils.h" // must be included first because of "#define _USE_MATH_DEFINES" on windows
 
 
 
@@ -205,19 +204,15 @@ void postprocessing(parametersSim* parameters, std::tuple<bool, meshObjFormat,  
 }
 
 
-#include <igl/read_triangle_mesh.h>
-#include <igl/point_mesh_squared_distance.h>
-#include <igl/per_face_normals.h>
-#include <igl/AABB.h>
-#include <igl/point_mesh_squared_distance.h>
+
 
 int main()
 {
     // the resolution of crack faces
     // parameters
     parametersSim parameters;
-    parameters.dx = 0.0035; 
-    parameters.vdbVoxelSize = 0.00035;
+    parameters.dx = 0.035; 
+    parameters.vdbVoxelSize = 0.0035;
     std::string crackFilePath = "/home/floyd/Linxu/crackExtraction/crackExtraction/build/output/particles.txt";
     std::string cutObjectFilePath = "/home/floyd/Linxu/crackExtraction/crackExtraction/build/output/object.obj";
     std::vector<Particle> particleVec;
@@ -251,7 +246,7 @@ int main()
     // case 0: complete cut with MCUT
     // case 1: complete cut with openVDB
     // case 2: partial cut with openVDB
-    int cuttingMethod = 2;
+    int cuttingMethod = 0;
     switch(cuttingMethod)
     {
 

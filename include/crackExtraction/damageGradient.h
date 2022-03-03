@@ -2,19 +2,13 @@
 
 #define DAMAGEGRADIENT_H
 
-#include <Eigen/Core>
-#include <Eigen/Dense>
-#include <Eigen/IterativeLinearSolvers>
-#include <Eigen/Sparse>
-#include <algorithm>
 #include <cmath>
-#include <set>
-#include <time.h>
 
 
-#include "mpm-fracture/mpm_utils.h"
-#include "mpm-fracture/utils.h"
-#include "mpm-fracture/particles.h"
+#include "crackExtraction/utils.h"
+#include "crackExtraction/particles.h"
+#include "crackExtraction/weights.h"
+
 
 // calculate the damage gradient of all particles and grid nodes.
 void calDamageGradient(std::vector<Particle>*, parametersSim, double, std::map<int, int>*, std::vector<Grid>*);

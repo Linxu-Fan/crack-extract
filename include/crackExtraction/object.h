@@ -1,22 +1,22 @@
 #pragma once
 
-#include "mpm-fracture/utils.h"
-#include "mpm-fracture/weights.h"
+#include "crackExtraction/utils.h"
+#include "crackExtraction/weights.h"
 
 #include <igl/AABB.h>
-//#include <igl/polygons_to_triangles.h>
+#include <Eigen/Sparse>
 #include <igl/facet_components.h>
 #include <igl/remove_unreferenced.h>
 #include <igl/gaussian_curvature.h>
-#include <igl/per_corner_normals.h>
-#include <igl/per_face_normals.h>
-#include <igl/per_vertex_normals.h>
-#include <igl/principal_curvature.h>
-#include <igl/point_mesh_squared_distance.h>
-#include <igl/cotmatrix.h>
-#include <igl/invert_diag.h>
-#include <igl/massmatrix.h>
-#include <igl/centroid.h>
+//#include <igl/per_corner_normals.h>
+// #include <igl/per_face_normals.h>
+// #include <igl/per_vertex_normals.h>
+// #include <igl/principal_curvature.h>
+// #include <igl/point_mesh_squared_distance.h>
+// #include <igl/cotmatrix.h>
+// #include <igl/invert_diag.h>
+// #include <igl/massmatrix.h>
+// #include <igl/centroid.h>
 
 
 #include <openvdb/openvdb.h>

@@ -1,4 +1,4 @@
-#include "mpm-fracture/utils.h"
+#include "crackExtraction/utils.h"
 #include <mapbox/earcut.hpp>
 
 void toTrimesh(trimesh::TriMesh& tm, const GenericMesh& gm)
@@ -204,32 +204,6 @@ void writeVDBMesh(const char* filename, openvdb::tools::VolumeToMesh& mesh)
     file.close();
 }
 
-void saveOpenVDBGrid(const openvdb::FloatGrid::Ptr& grid, const std::string& outDir)
-{
-#if defined(DUMP_DEBUG_MESH_DATA_TO_FILE)
-    std::string name = grid->getName();
-    std::string fname = pystring::os::path::join({ outDir, "_" + name + ".vdb" }); // dash needed incase "name" is empty
-    printf("%% save grid %s\n", fname.c_str());
-    openvdb::io::File outfile(fname);
-    outfile.write({ grid });
-    outfile.close();
-#else
-    printf("%% skip logging vdb grid to file\n");
-#endif
-}
-
-void saveOpenVDBGrids(const openvdb::GridPtrVec& grids, const std::string& outDir, const std::string& name)
-{
-#if defined(DUMP_DEBUG_MESH_DATA_TO_FILE)
-    std::string fname = pystring::os::path::join({ outDir, "_" + name + ".vdb" }); // dash needed incase "name" is empty
-    printf("%% save grids %s\n", fname.c_str());
-    openvdb::io::File outfile(fname);
-    outfile.write(grids);
-    outfile.close();
-#else
-    printf("%% skip logging vdb grid to file\n");
-#endif
-}
 
 // watertight mesh
 openvdb::FloatGrid::Ptr meshToVDBLevelSetGrid(
@@ -345,6 +319,8 @@ void cleanGenericMesh(GenericMesh& gm)
     }
 }
 
+
+
 std::vector<std::vector<std::array<double, 2>>> to2Dpoly(std::vector<Eigen::Vector3d>& poly3d)
 {
     const Eigen::Vector3d& v0 = poly3d[0];
@@ -386,7 +362,8 @@ std::vector<std::vector<std::array<double, 2>>> to2Dpoly(std::vector<Eigen::Vect
     return poly2d;
 }
 
-#include "mpm-fracture/polygon_triangulate.hpp"
+
+#include "crackExtraction/polygon_triangulate.hpp"
 
 void triangulateGenericMesh(GenericMesh& m)
 {

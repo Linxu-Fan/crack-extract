@@ -1,4 +1,4 @@
-﻿#include "mpm-fracture/extractCrack.h"
+﻿#include "crackExtraction/extractCrack.h"
 
 using namespace voro;
 using namespace Eigen;
@@ -195,80 +195,6 @@ int findIndexVertex(Eigen::Vector3d pos, std::vector<Eigen::Vector3d>* vertexInd
     (*vertexIndex).push_back(pos);
 
     return index;
-}
-
-// Read voronoi tesselation
-void readPoints(std::vector<Point>* points)
-{
-    ifstream in;
-    in.open("crack.vol");
-    std::string line;
-    while (getline(in, line)) {
-        stringstream ss(line);
-        std::string element;
-        std::vector<std::string> eachLine;
-
-        while (ss >> element) {
-            eachLine.push_back(element);
-        }
-
-        if (eachLine.size() > 0) {
-            int index = std::stoi(eachLine[0]);
-            Eigen::Vector3d pos = { std::atof(eachLine[1].c_str()), std::atof(eachLine[2].c_str()), std::atof(eachLine[3].c_str()) };
-            int numVertices = std::stoi(eachLine[4]);
-
-            // read all vertices in the cell of this point
-            std::vector<Eigen::Vector3d> verticsCoor;
-            for (int i = 5; i < 5 + numVertices; i++) {
-                std::vector<std::string> vecCoor = split(eachLine[i], ",()");
-
-                Eigen::Vector3d coor = { std::atof(vecCoor[0].c_str()), std::atof(vecCoor[1].c_str()), std::atof(vecCoor[2].c_str()) };
-                verticsCoor.push_back(coor);
-            }
-
-            int indnum = 5 + numVertices;
-            int numFaces = std::stoi(eachLine[indnum]);
-
-            // read all faces in the cell of this point
-            std::vector<std::vector<int>> verticesFace;
-            for (int i = 6 + numVertices; i < 6 + numVertices + numFaces; i++) {
-                std::vector<std::string> vecFace = split(eachLine[i], ",()");
-
-                std::vector<int> eachFace;
-                for (int j = 0; j < vecFace.size(); j++) {
-                    eachFace.push_back(std::stoi(vecFace[j]));
-                }
-                verticesFace.push_back(eachFace);
-            }
-
-            // read all surfaceNormal in the cell of this point
-            std::vector<Eigen::Vector3d> surfaceNormal;
-            for (int i = 6 + numVertices + numFaces; i < 6 + numVertices + numFaces * 2; i++) {
-                std::vector<std::string> vecFaceNormal = split(eachLine[i], ",()");
-
-                Eigen::Vector3d eachFaceNormal = { std::atof(vecFaceNormal[0].c_str()), std::atof(vecFaceNormal[1].c_str()), std::atof(vecFaceNormal[2].c_str()) };
-                surfaceNormal.push_back(eachFaceNormal);
-            }
-
-            // read all neighbours
-            std::vector<int> neighbour;
-            for (int k = 6 + numVertices + numFaces * 2; k < eachLine.size(); k++) {
-                neighbour.push_back(std::stoi(eachLine[k]));
-            }
-
-            (*points).push_back(Point(index, pos, numVertices, verticsCoor, numFaces, verticesFace, surfaceNormal, neighbour));
-
-        } else {
-            Eigen::Vector3d pos = { 0, 0, 0 }; // each point's position
-            std::vector<Eigen::Vector3d> verticsCoor; // vertices' coordinate
-            std::vector<std::vector<int>> verticesFace; // vertices of each face
-            std::vector<Eigen::Vector3d> surfaceNormal; // vertices' coordinate
-            std::vector<int> neighbour; // neighbour points that share common faces with this point
-            std::vector<int> neighbourCalculated; // neighbour points that have already find shared face
-            (*points).push_back(Point(-999, pos, 0, verticsCoor, 0, verticesFace, surfaceNormal, neighbour));
-        }
-    }
-    in.close();
 }
 
 // Read all structured nodes and calculate the damage gradient

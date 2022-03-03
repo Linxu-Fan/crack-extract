@@ -2,7 +2,7 @@
 #
 # eigen
 #
-set (EIGEN_INCLUDE_DIR ${EXTERN_PROJECTS_DIR}/eigen/Eigen CACHE STRING "eigen includes")
+set (EIGEN_INCLUDE_DIR ${EXTERN_PROJECTS_DIR}/eigen CACHE STRING "eigen includes")
 
 
 

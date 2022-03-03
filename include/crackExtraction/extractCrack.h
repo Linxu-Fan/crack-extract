@@ -2,28 +2,19 @@
 
 #define EXTRACTCRACK_H
 
-#include "mpm-fracture/utils.h"
-#include "mpm-fracture/damageGradient.h"
-#include "mpm-fracture/grid.h"
-#include "mpm-fracture/mpm_utils.h"
-#include "mpm-fracture/particles.h"
-#include "mpm-fracture/weights.h"
+#include "crackExtraction/utils.h"
+#include "crackExtraction/damageGradient.h"
+#include "crackExtraction/particles.h"
+#include "crackExtraction/weights.h"
 #include "voro++.hh"
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <time.h>
 #include <algorithm>
 #include <set>
 #include <iterator>
-
-
-
-
-
-
 
 
 
@@ -34,11 +25,6 @@
 
 // read obj file
 struct meshObjFormat readObj(std::string path);
-
-
-// void writeOffFile(std::vector<Eigen::Vector3d> vertices, std::vector<std::vector<int>> faces, std::string name);
-
-
 
 
 // Struct of particles
@@ -210,9 +196,6 @@ double ifFullyDamaged(Eigen::Vector3d, parametersSim, std::map<int, int>*, std::
 // Store the index of each vertex and its position
 int findIndexVertex(Eigen::Vector3d, std::vector<Eigen::Vector3d>*);
 
-// Read voronoi tesselation
-void readPoints(std::vector<Point>*);
-
 // Read all structured nodes and calculate the damage gradient
 void readParticlesAndCalGradient(std::string, std::vector<Particle>*, parametersSim, std::map<int, int>*, std::vector<Grid>*);
 
@@ -230,150 +213,9 @@ bool ifTwoSides(int, int, std::vector<Point>*, std::vector<int>*, std::vector<Ei
 
 
 
-//// Extract the crack surface
-//crackSurface extractCrackSurface(std::string, std::vector<Eigen::Vector3d>*, struct parametersSim);
-
-
-
-
-
-
-// the following functions clean the mesh and sample points
-// the following functions clean the mesh and sample points
-
-
-
-// clean faces from voro output
-std::tuple< std::vector<Eigen::Vector3d>, std::vector<std::vector<int>>, std::vector<std::vector<int>> > cleanMeshAfterVoro(std::vector<Eigen::Vector3d>* vertices, std::vector<std::vector<int>>* faces);
-
-
-
-// insert points between two points
-std::vector<Eigen::Vector3d> insertPoints(Eigen::Vector3d startPos, Eigen::Vector3d endPos, double dx);
-
-
-
-// mesh struct
-struct meshFace
-{
-	// the index of each face
-	int index = -99;
-
-	// each vertex in the face
-	std::vector<int> vertices;
-
-	// updated vertices in each edge
-	std::vector<int> verticesUpdated;
-
-	// updated vertices in each edge
-	std::vector<Eigen::Vector2d> verticesUpdatedCoor2D;
-
-	// sample points index inside of the face
-	std::vector<int> sampledPoints;
-
-	// sample points coordinates in 2D
-	std::vector<Eigen::Vector2d> sampledPointsCoor2D;
-
-	// inserted points after each vertex
-	std::vector<std::vector<int>> insertPointsAfterVertex;
-
-	// key is edge name, value is the first vertex and second vertex
-	// the element is string. If the start point and end point are pos1 and pos2 respectively, the edge is {string(pos1) + "*" + string(pos2)} 
-	std::map<std::string, std::pair<int, int>> edge;
-
-	// key is vertex index, value is the position where the vertex is in the vertices vector
-	std::map<int, int> vertexPosition;
-
-	// key is edge name, value is the edge length
-	std::map<std::string, double> edgeLength;
-
-	// neighbouring faces of each edge
-	std::map<std::string, std::vector<int>> neighbours;
-
-	// inserted pints between two vertices
-	// key is edge name, value is the index of each poin
-	std::map<std::string, std::vector<int>> edgeInsertedPoints;
-
-	// indicate if an edge has already been interpolated or not
-	std::map<std::string, bool> edgeInsertedOrNot;
-
-
-	// https://answers.unity.com/questions/1522620/converting-a-3d-polygon-into-a-2d-polygon.html
-	// face normal
-	Eigen::Vector3d normal = { 0, 0, 0 };
-
-	// first unit vector in the face plane
-	Eigen::Vector3d u = { 0, 0, 0 };
-
-	// second unit vector in the face plane
-	Eigen::Vector3d v = { 0, 0, 0 };
-
-
-	// triangulation results
-	// store triangles
-	std::vector<Eigen::Vector3i> trianglesInThisFace;
-};
-
-
-
-// refined mesh struct
-struct meshFaceRefined
-{
-	// branching vertices
-	std::set<int> branchingEdgeVertices; // vertices that are in the branching region
-
-	// refined vertices
-	std::vector<Eigen::Vector3d> verticesRefined;
-
-    // refined faces
-	std::vector<Eigen::Vector3i> facesRefined;
-
-    // refined faces
-	std::vector<std::vector<int>> facesRefinedFail;
-
-	// neighbouring vertices
-	std::vector<std::set<int>> neighbouringVertex;
-
-	// the average normal of each vertex
-	std::vector<Eigen::Vector3d> VertexNormal;
-
-};
-
-
-
-
-
-
-// refine mesh
-struct meshFaceRefined meshRefine(std::vector<Eigen::Vector3d>* vertices, std::vector<std::vector<int>>* faces, std::vector<std::vector<int>>* verticesInfor, double dx); // dx is the refined resolution
-
-
-
 // Extract the crack surface
 // if a crack surface is found, the crack surface with partial cut, the crack surface with full cut,  each fragment volume in .obj format
 std::tuple<bool, meshObjFormat, meshObjFormat, std::vector<meshObjFormat> >  extractCrackSurface(std::vector<Particle>* particlesRaw, struct parametersSim param);
-
-
-
-
-
-
-
-////////////////////////////////
-// function for multi-velocity field
-////////////////////////////////
-crackSurfaceInfor  extractCrackSurface_MultiVel(std::string fileName, std::vector<Eigen::Vector3d>* mpmParticlePositions, struct parametersSim param);
-
-
-
-
-
-
-
-////////////////////////////////
-// function for getting partial cracks
-////////////////////////////////
-meshFaceRefined extractCrackSurface_PartialCracks(std::string fileName, std::vector<Eigen::Vector3d>* mpmParticlePositions, struct parametersSim param);
 
 
 
@@ -410,11 +252,6 @@ meshObjFormat upsampleMesh(parametersSim param, meshObjFormat *inputMesh);
 // cut objects with mcut
 ////////////////////////////////
 void cutObject_MCUT(parametersSim param, std::string objectName, meshObjFormat* collisionMeshParent, std::vector<meshObjFormat>* fragments, std::vector<meshObjFormat>* finalFragments);
-
-
-
-
-
 
 
 

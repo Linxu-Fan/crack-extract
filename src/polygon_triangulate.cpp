@@ -8,7 +8,7 @@
 
 using namespace std;
 
-# include "mpm-fracture/polygon_triangulate.hpp"
+# include "crackExtraction/polygon_triangulate.hpp"
 
 //****************************************************************************80
 

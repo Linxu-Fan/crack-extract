@@ -59,10 +59,6 @@
 #include "triangle/triangle.h"
 
 
-#include "mpm-fracture/mpm_utils.h"
-
-
-
 #include <unordered_map>
 
 #define STALE_FLOAT_PARAM (-1.0f)
@@ -71,20 +67,6 @@
 
 
 
-#define MULTI_BULLET_THREADED 1
-#define MULTI_MPM_THREADED 1
-
-
-#define TIMEASNAME // the previous method for assigning name is too long. Use time as the name
-
-// Using mcut to generate fragments by enabling this marco, 
-//#define USE_MCUT
-
-// This corresponds to the method we used before. Partial cracks are enabled.
-#define USE_LEVEL_SET
-
-// This is the new method. No partial crack.
-//#define USE_LEVEL_SET_FULLYCUT
 
 // asertion macros
 #define ASSERT_(Expr, Msg, ...)                                      \
@@ -98,133 +80,83 @@
 
 #define ASSERT(Expr) ASSERT_(Expr, " \b")
 
-// Uncomment if you wish do dump (large) openvdb grids to file for debugging
-// #define DUMP_DEBUG_MESH_DATA_TO_FILE 1
-
-///
-#define PROFILING_BUILD
-
-#if defined(PROFILING_BUILD)
-#include <chrono>
-#include <stack>
-#include <memory>
-
-#define TIMESTACK_PUSH(name) \
-if(g_timestack.empty()){ \
-    g_timestack.push(std::unique_ptr<mini_timer>(new mini_timer(name, &g_time_profiles)));\
-}else{\
-    g_timestack.push(std::unique_ptr<mini_timer>(new mini_timer(g_timestack.top()->get_name() + "::" + name, &g_time_profiles)));\
-}
-
-#define TIMESTACK_POP() \
-    g_timestack.pop()
-
-#define TIMESTACK_RESET()                 \
-    while (!g_timestack.empty())          \
-    {                                     \
-        g_timestack.top()->set_invalid(); \
-        g_timestack.pop();                \
-    }
 
 
 
-#define SCOPED_TIMER(name) \
-  raii_timer ttt_(name);
+struct parametersSim {
 
-#else
-#define SCOPED_TIMER(name)
-#define TIMESTACK_PUSH(name)
-#define TIMESTACK_POP()
-#define TIMESTACK_RESET()
-#endif
+	int numOfMpmThreads = 1;
 
-#if defined(PROFILING_BUILD)
+	// computational domain
+	Eigen::Vector3d length = { 1, 1, 1 }; // computation cube lengths of three dimensions (x , y , z). The origin point is (0 , 0 , 0)
+	Eigen::Vector3d minCoordinate = { 0, 0, 0 }; // the minimum coordinate of the computation domain
 
-class mini_timer
+	// Bcakground Eulerian grid
+	double dx = 2E-2; // grid space
+	double DP = dx * dx / 4;
+
+	// openvdb voxel size
+	double vdbVoxelSize = 0.0005;
+
+	// material properties
+	double dt = 1E-7; // timestep
+	double dpx = dx / 2; // particle space
+	double density = 2450; // particle density
+	double vol = dpx * dpx; // each particle's initial volume
+	double particle_mass = vol * density; // particle's mass
+	double E = 3.2e10; // Young's modulus
+	double nu = 0.2; //Poisson ratio
+	double mu = E / (2 * (1 + nu)); // lame parameter mu / shear modulus  ::::only for isotropic material
+	double lambda = E * nu / ((1 + nu) * (1 - 2 * nu)); // lame parameter lambda  ::::only for isotropic material
+	double K = 2 / 3 * mu + lambda; // bulk modulus  ::::only for isotropic material
+
+
+	// applied force
+	std::vector< std::pair<Eigen::Vector3d, Eigen::Vector3d> > appliedForce;
+
+
+
+	// local damage field parameters
+	double thetaf = 3.7e6;
+	double Gf = 3;
+	double lch = std::sqrt(3) * dx;
+	double HsBar = thetaf * thetaf / 2 / E / Gf;
+	double Hs = HsBar * lch / (1 - HsBar * lch);
+	double damageThreshold = 0.97; // after this threshold, 
+	double sigmoidK = 5; // this parameter control the curevature of the sigmoid function. It is recommend that it is bigger than 5
+
+
+
+	// crack extraction algorithm parameter
+	double dcx = dx; // crack grid spacing
+
+	// the refined mesh resolution
+	double drx = dx / 4.0; // must be samller than dpx
+
+
+	// chevron marks parameters
+	int pathLength = 2000; // the maximum path length
+	double stepSize = drx; // stepsize
+	double divertAngle = 0.3; // cos(angle) where angle is the angle between this step and next step
+	double influenceRadius = 2 * drx; // the radius during which no vertices should be visited
+	double smoothRadius = 2 * drx; // background grid spacing for smooth height value
+	double pertubationMagitude = 4 * drx; // pertubation magnitude for each vertex
+	double ratioOfDeepenMarks = 0.1; // ratio of chevron marks that should be deepened
+	double deepenMagnitude = 2.0; // magnitude of deepened chevron marks
+
+
+};
+
+
+static int calculateID(int x, int y, int z, Eigen::Vector3d len, double dx) // coordinate of x and y, length in three dimensions of the cube, grid space
 {
-    std::chrono::time_point<std::chrono::steady_clock> m_start;
-    std::chrono::time_point<std::chrono::steady_clock> m_pause_start;
-    std::chrono::time_point<std::chrono::steady_clock> m_pause_end;
-
-    std::string m_name;
-    bool m_valid = true;
-    bool m_was_paused = false;
-    std::map<std::string, std::vector<unsigned long long>>* tmap;
-
-public:
-    mini_timer(const std::string &name, std::map<std::string, std::vector<unsigned long long>>* tmap_) : 
-    m_start(std::chrono::steady_clock::now()), 
-    m_name(name),
-    tmap(tmap_)
-    {
-    }
-
-    ~mini_timer()
-    {
-        if (m_valid)
-        {
-            const std::chrono::time_point<std::chrono::steady_clock> now = std::chrono::steady_clock::now();
-            const std::chrono::milliseconds elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - m_start);
-            unsigned long long elapsed_ = elapsed.count();
-            unsigned long long elapsed_pause_time_ = 0;
-
-            if (m_was_paused)
-            {
-                std::chrono::milliseconds elapsed_pause_time = std::chrono::duration_cast<std::chrono::milliseconds>(m_pause_end - m_pause_start);
-                elapsed_pause_time_ = elapsed_pause_time.count();
-                elapsed_ -= elapsed_pause_time_; // remove noise due to nested tasks
-            }
-
-            //printf("[PROFILE]: %s (%llums | %llums)\n", m_name.c_str(), elapsed_, elapsed_pause_time_);
-
-            (*tmap)[m_name].push_back(elapsed_);
-        }
-    }
-
-    void pause()
-    {
-        m_was_paused = true;
-        m_pause_start = std::chrono::steady_clock::now();
-    }
-
-    void resume()
-    {
-        m_pause_end = std::chrono::steady_clock::now();
-    }
-
-    void set_invalid()
-    {
-        m_valid = false;
-    }
-    std::string get_name()
-    {
-        return m_name;
-    }
-    void set_name(const std::string name)
-    {
-        m_name = name;
-    }
+	Eigen::Vector3i length = (len / dx).cast<int>() + Eigen::Vector3i::Constant(1);
+	int ID = z * (length(0) * length(1)) + y * length(0) + x;
+	return ID;
 };
 
-extern std::map<std::string, std::vector<unsigned long long>> g_time_profiles;
-extern std::stack<std::unique_ptr<mini_timer>> g_timestack;
 
-struct raii_timer{
-    raii_timer(const std::string& name)
-    {
-        TIMESTACK_PUSH(name);
-    }
 
-    ~raii_timer()
-    {
-        TIMESTACK_POP();
-    }
-};
-
-#endif
-
-extern std::vector<std::pair<std::string,int>> g_mpmFractureSimTimestepCounts;
-extern std::map<std::string,double> g_rigidBodyVolumes;
 
 // return two vectors which define the crack surface
 struct crackSurface {
@@ -254,24 +186,6 @@ struct meshObjFormat
 
 
 
-// refined mesh struct
-struct crackSurfaceInfor
-{
-    int numOfFragments;
-
-	// refined vertices
-	std::vector<Eigen::Vector3d> vertices;
-
-    // refined faces
-	std::vector<std::vector<int>> faces;
-
-	// refined vertices
-	std::vector<Eigen::Vector3d> facesNormal;
-
-};
-
-
-
 struct GenericMesh {
     GenericMesh()
     {
@@ -285,13 +199,6 @@ struct GenericMesh {
     crackSurface m;
 };
 
-static std::string readTextFile(const std::string& fpath)
-{
-    std::ifstream t(fpath.c_str());
-    std::string str((std::istreambuf_iterator<char>(t)),
-        std::istreambuf_iterator<char>());
-    return str;
-}
 
 
 static trimesh::point toTrimesh(const Eigen::Vector3f& in)
@@ -300,9 +207,6 @@ static trimesh::point toTrimesh(const Eigen::Vector3f& in)
 }
 
 
-extern void writeVDBMesh(const char* filename, openvdb::tools::VolumeToMesh& mesh);
-extern void saveOpenVDBGrids(const openvdb::GridPtrVec& grids, const std::string& outDir, const std::string& name);
-extern void saveOpenVDBGrid(const openvdb::FloatGrid::Ptr& grid, const std::string& outDir);
 
 extern openvdb::FloatGrid::Ptr meshToVDBLevelSetGrid(
     const trimesh::TriMesh* mesh,

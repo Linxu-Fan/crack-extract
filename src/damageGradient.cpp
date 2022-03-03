@@ -1,6 +1,5 @@
-﻿#include "mpm-fracture/damageGradient.h"
-#include "mpm-fracture/weights.h"
-#include "mpm-fracture/mpm_utils.h"
+﻿#include "crackExtraction/damageGradient.h"
+
 
 // calculate the damage gradient of all particles and grid nodes.
 void calDamageGradient(std::vector<Particle>* particles, parametersSim param, double dx, std::map<int, int>* gridMap, std::vector<Grid>* nodesVec)
