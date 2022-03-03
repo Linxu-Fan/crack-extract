@@ -105,6 +105,10 @@ void getSurfaceMeshFromVdbGrid(openvdb::FloatGrid::Ptr bareMeshVdbGridPtr,int de
 // the input particles may locate in the negative domain. This function projects them to the positive domain
 void preprocessing(std::string crackFilePath, std::string cutObjectFilePath, parametersSim* parameters, std::vector<Particle>* particleVec, meshObjFormat* objectMesh)
 {
+    // std::string path = "fixed.txt";
+	// std::ofstream outfile2(path, std::ios::trunc);
+
+
     // project damaged particles to the positive domain
     // read damaged particles
     std::ifstream inf;
@@ -119,8 +123,11 @@ void preprocessing(std::string crackFilePath, std::string cutObjectFilePath, par
         Eigen::Vector3d ivel = { 0, 0, 0 };
         double iDp = atof(s3.c_str());
         (*particleVec).push_back(Particle(ipos, ivel, 0, 0, iDp));
+
+        //outfile2 << std::scientific << std::setprecision(3)<< ipos[0]<<" "<< ipos[1]<<" "<< ipos[2]<<" "<< iDp<<std::endl;
 		
     }
+    //outfile2.close();
  
 
     
