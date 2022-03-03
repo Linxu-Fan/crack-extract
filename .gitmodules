@@ -25,3 +25,6 @@
 [submodule "extern/mcut"]
 	path = extern/mcut
 	url = https://github.com/cutdigital/mcut.git
+[submodule "extern/eigen"]
+	path = extern/eigen
+	url = https://gitlab.com/libeigen/eigen.git

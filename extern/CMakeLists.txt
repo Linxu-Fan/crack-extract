@@ -1,5 +1,12 @@
 
 #
+# eigen
+#
+set (EIGEN_INCLUDE_DIR ${EXTERN_PROJECTS_DIR}/eigen/Eigen CACHE STRING "eigen includes")
+
+
+
+#
 # pystring
 #
 set (PYSTRING_PROJECT_DIR ${EXTERN_PROJECTS_DIR}/pystring CACHE STRING "location of pystring" )
