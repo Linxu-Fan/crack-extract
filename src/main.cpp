@@ -211,15 +211,30 @@ void postprocessing(parametersSim* parameters, std::tuple<bool, meshObjFormat,  
 
 
 
-int main()
+int main(int argc, char *argv[])
 {
+    std::vector<std::string> inputPara;
+    std::string inputFile = argv[1];
+    std::ifstream inf;
+    inf.open(inputFile);
+    std::string sline;
+    while (getline(inf, sline)) 
+    {
+        inputPara.push_back(sline);		
+    }
+    inf.close();
+ 
+
+
     // the resolution of crack faces
     // parameters
     parametersSim parameters;
-    parameters.dx = 0.035; 
-    parameters.vdbVoxelSize = 0.0035;
-    std::string crackFilePath = "/home/floyd/Linxu/crackExtraction/crackExtraction/build/output/particles.txt";
-    std::string cutObjectFilePath = "/home/floyd/Linxu/crackExtraction/crackExtraction/build/output/object.obj";
+    parameters.dx = std::stod(inputPara[4]); 
+    parameters.vdbVoxelSize = std::stod(inputPara[5]);
+    // std::string crackFilePath = "/home/floyd/Linxu/crackExtraction/crackExtraction/build/output/particles.txt";
+    // std::string cutObjectFilePath = "/home/floyd/Linxu/crackExtraction/crackExtraction/build/output/object.obj";
+    std::string crackFilePath = inputPara[0] + "/" + inputPara[1];
+    std::string cutObjectFilePath = inputPara[0] + "/" + inputPara[2];
     std::vector<Particle> particleVec;
     meshObjFormat objectMesh;
 
@@ -240,9 +255,9 @@ int main()
 
         // output the crack surface and fragments
         meshObjFormat crackSurfacePartialCut = std::get<1>(result);
-        writeObjFile(crackSurfacePartialCut.vertices, crackSurfacePartialCut.faces, "./output/partialCutSurface");
+        writeObjFile(crackSurfacePartialCut.vertices, crackSurfacePartialCut.faces, inputPara[0] + "/" + "partialCutSurface");
         meshObjFormat crackSurfaceFullCut = std::get<2>(result);
-        writeObjFile(crackSurfaceFullCut.vertices, crackSurfaceFullCut.faces, "./output/fullCutSurface");
+        writeObjFile(crackSurfaceFullCut.vertices, crackSurfaceFullCut.faces, inputPara[0] + "/" + "fullCutSurface");
         std::vector<meshObjFormat> fragments = std::get<3>(result);
 
         
@@ -250,218 +265,220 @@ int main()
         // case 0: complete cut with MCUT
         // case 1: complete cut with openVDB
         // case 2: partial cut with openVDB
-        int cuttingMethod = 0;
-        switch(cuttingMethod)
+        std::string cuttingMethod = inputPara[3];
+        if(cuttingMethod == "MCUT")
+        {
+            std::vector<meshObjFormat> fragmentsFinal;
+            cutObject_MCUT(parameters,"tmpCutPbject", &objectMesh, &fragments, &fragmentsFinal);
+
+            // for each fragment level
+            for (unsigned int i = 0; i < fragmentsFinal.size(); ++i) 
+            {
+                writeObjFile(fragmentsFinal[i].vertices, fragmentsFinal[i].faces, inputPara[0] + "/" + "fullCut_MCUT_Fragment_"+std::to_string(i));
+            }
+        }
+        else if(cuttingMethod == "OPENVDB_FULL")
         {
 
-            case 0:
-            {
-                std::vector<meshObjFormat> fragmentsFinal;
-                cutObject_MCUT(parameters,"tmpCutPbject", &objectMesh, &fragments, &fragmentsFinal);
-
-                // for each fragment level
-                for (unsigned int i = 0; i < fragmentsFinal.size(); ++i) 
-                {
-                    writeObjFile(fragmentsFinal[i].vertices, fragmentsFinal[i].faces, "./output/fullCut_MCUT_Fragment_"+std::to_string(i));
-                }
-            }
-            break;
-
-            case 1:
-            {
-                // define openvdb linear transformation
-                openvdb::math::Transform::Ptr transform = openvdb::math::Transform::createLinearTransform(parameters.vdbVoxelSize);
-
-                
-                // convert crack surface mesh to vdb grid
-                GenericMesh crackSurfaceGeneric;
-                crackSurfaceGeneric.m.vertices = crackSurfaceFullCut.vertices;
-                crackSurfaceGeneric.m.faces = crackSurfaceFullCut.faces;
-                triangulateGenericMesh(crackSurfaceGeneric);
-
-
-                std::vector<openvdb::Vec3f> myMeshPoints_crack;
-                for (int i = 0; i < crackSurfaceGeneric.m.vertices.size(); ++i) 
-                {
-                    const Eigen::Vector3d p = crackSurfaceGeneric.m.vertices[i];
-                    myMeshPoints_crack.push_back(openvdb::Vec3f(p[0], p[1], p[2]));
-                }
-                std::vector<openvdb::Vec3I> myMeshTris_crack;
-                for (int i = 0; i < crackSurfaceGeneric.triangulatedFaces.size() / 3; ++i) 
-                {
-                    myMeshTris_crack.push_back(openvdb::Vec3I(crackSurfaceGeneric.triangulatedFaces[3 * i + 0], crackSurfaceGeneric.triangulatedFaces[3 * i + 1], crackSurfaceGeneric.triangulatedFaces[3 * i + 2]));
-                }
-
-
-
-                openvdb::FloatGrid::Ptr crackLevelSetGrid = openvdb::tools::meshToUnsignedDistanceField<openvdb::FloatGrid>(
-                    *transform,
-                    myMeshPoints_crack,
-                    myMeshTris_crack,
-                    std::vector<openvdb::Vec4I>(),
-                    3);
-
-                for (openvdb::FloatGrid::ValueOnIter iter = crackLevelSetGrid->beginValueOn(); iter; ++iter) {
-                    float dist = iter.getValue();
-                    float value = dist - std::sqrt(3 * std::pow(parameters.vdbVoxelSize, 2));
-                    iter.setValue(value);
-                }
-                crackLevelSetGrid->setGridClass(openvdb::GRID_LEVEL_SET);
-
-
-
-
-                // convert object mesh to vdb grid
-                GenericMesh objectMeshGeneric;
-                objectMeshGeneric.m.vertices = objectMesh.vertices;
-                objectMeshGeneric.m.faces = objectMesh.faces;
-                triangulateGenericMesh(objectMeshGeneric);
-
-
-                std::vector<openvdb::Vec3f> myMeshPoints_object;
-                for (int i = 0; i < objectMeshGeneric.m.vertices.size(); ++i) 
-                {
-                    const Eigen::Vector3d p = objectMeshGeneric.m.vertices[i];
-                    myMeshPoints_object.push_back(openvdb::Vec3f(p[0], p[1], p[2]));
-                }
-                std::vector<openvdb::Vec3I> myMeshTris_object;
-                for (int i = 0; i < objectMeshGeneric.triangulatedFaces.size() / 3; ++i) 
-                {
-                    myMeshTris_object.push_back(openvdb::Vec3I(objectMeshGeneric.triangulatedFaces[3 * i + 0], objectMeshGeneric.triangulatedFaces[3 * i + 1], objectMeshGeneric.triangulatedFaces[3 * i + 2]));
-                }
-
-
-                // create a float grid containing the level representation of the sphere mesh
-                openvdb::FloatGrid::Ptr objectLevelSetGrid = openvdb::tools::meshToLevelSet<openvdb::FloatGrid>(
-                    *transform,
-                    myMeshPoints_object,
-                    myMeshTris_object);
-                objectLevelSetGrid->setGridClass(openvdb::GRID_LEVEL_SET);
-
-
-
-                // do the boolean operation
-                openvdb::FloatGrid::Ptr copyOfCrackGrid = crackLevelSetGrid->deepCopy();
-                openvdb::FloatGrid::Ptr copyOfObjGrid = objectLevelSetGrid->deepCopy();
-                // Compute the difference (A / B) of the two level sets.
-                openvdb::tools::csgDifference(*copyOfObjGrid, *copyOfCrackGrid);
-                openvdb::FloatGrid::Ptr csgSubtractedObjGrid = copyOfObjGrid; // cutted piece
-                // list of fragment pieces after cutting (as level set grids)
-                std::vector<openvdb::FloatGrid::Ptr> fragmentLevelSetGridPtrList;
-                openvdb::tools::segmentSDF(*csgSubtractedObjGrid, fragmentLevelSetGridPtrList);
-
-
-
-
-                // for each fragment level
-                for (unsigned int i = 0; i < fragmentLevelSetGridPtrList.size(); ++i) 
-                {
-                    meshObjFormat fullCutFragment;
-                    getSurfaceMeshFromVdbGrid(fragmentLevelSetGridPtrList[i],1000000, fullCutFragment);
-                    writeObjFile(fullCutFragment.vertices, fullCutFragment.faces, "./output/fullCutFragment_"+std::to_string(i));
-                }
+        
+            // define openvdb linear transformation
+            openvdb::math::Transform::Ptr transform = openvdb::math::Transform::createLinearTransform(parameters.vdbVoxelSize);
 
             
-            }
-            break;
+            // convert crack surface mesh to vdb grid
+            GenericMesh crackSurfaceGeneric;
+            crackSurfaceGeneric.m.vertices = crackSurfaceFullCut.vertices;
+            crackSurfaceGeneric.m.faces = crackSurfaceFullCut.faces;
+            triangulateGenericMesh(crackSurfaceGeneric);
 
-            case 2:
+
+            std::vector<openvdb::Vec3f> myMeshPoints_crack;
+            for (int i = 0; i < crackSurfaceGeneric.m.vertices.size(); ++i) 
             {
-                // define openvdb linear transformation
-                openvdb::math::Transform::Ptr transform = openvdb::math::Transform::createLinearTransform(parameters.vdbVoxelSize);
-
-                
-                // convert crack surface mesh to vdb grid
-                GenericMesh crackSurfaceGeneric;
-                crackSurfaceGeneric.m.vertices = crackSurfacePartialCut.vertices;
-                crackSurfaceGeneric.m.faces = crackSurfacePartialCut.faces;
-                triangulateGenericMesh(crackSurfaceGeneric);
-
-
-                std::vector<openvdb::Vec3f> myMeshPoints_crack;
-                for (int i = 0; i < crackSurfaceGeneric.m.vertices.size(); ++i) 
-                {
-                    const Eigen::Vector3d p = crackSurfaceGeneric.m.vertices[i];
-                    myMeshPoints_crack.push_back(openvdb::Vec3f(p[0], p[1], p[2]));
-                }
-                std::vector<openvdb::Vec3I> myMeshTris_crack;
-                for (int i = 0; i < crackSurfaceGeneric.triangulatedFaces.size() / 3; ++i) 
-                {
-                    myMeshTris_crack.push_back(openvdb::Vec3I(crackSurfaceGeneric.triangulatedFaces[3 * i + 0], crackSurfaceGeneric.triangulatedFaces[3 * i + 1], crackSurfaceGeneric.triangulatedFaces[3 * i + 2]));
-                }
-
-
-
-                openvdb::FloatGrid::Ptr crackLevelSetGrid = openvdb::tools::meshToUnsignedDistanceField<openvdb::FloatGrid>(
-                    *transform,
-                    myMeshPoints_crack,
-                    myMeshTris_crack,
-                    std::vector<openvdb::Vec4I>(),
-                    3);
-
-                for (openvdb::FloatGrid::ValueOnIter iter = crackLevelSetGrid->beginValueOn(); iter; ++iter) {
-                    float dist = iter.getValue();
-                    float value = dist - std::sqrt(3 * std::pow(parameters.vdbVoxelSize, 2));
-                    iter.setValue(value);
-                }
-                crackLevelSetGrid->setGridClass(openvdb::GRID_LEVEL_SET);
-
-
-
-
-                // convert object mesh to vdb grid
-                GenericMesh objectMeshGeneric;
-                objectMeshGeneric.m.vertices = objectMesh.vertices;
-                objectMeshGeneric.m.faces = objectMesh.faces;
-                triangulateGenericMesh(objectMeshGeneric);
-
-
-                std::vector<openvdb::Vec3f> myMeshPoints_object;
-                for (int i = 0; i < objectMeshGeneric.m.vertices.size(); ++i) 
-                {
-                    const Eigen::Vector3d p = objectMeshGeneric.m.vertices[i];
-                    myMeshPoints_object.push_back(openvdb::Vec3f(p[0], p[1], p[2]));
-                }
-                std::vector<openvdb::Vec3I> myMeshTris_object;
-                for (int i = 0; i < objectMeshGeneric.triangulatedFaces.size() / 3; ++i) 
-                {
-                    myMeshTris_object.push_back(openvdb::Vec3I(objectMeshGeneric.triangulatedFaces[3 * i + 0], objectMeshGeneric.triangulatedFaces[3 * i + 1], objectMeshGeneric.triangulatedFaces[3 * i + 2]));
-                }
-
-
-                // create a float grid containing the level representation of the sphere mesh
-                openvdb::FloatGrid::Ptr objectLevelSetGrid = openvdb::tools::meshToLevelSet<openvdb::FloatGrid>(
-                    *transform,
-                    myMeshPoints_object,
-                    myMeshTris_object);
-                objectLevelSetGrid->setGridClass(openvdb::GRID_LEVEL_SET);
-
-
-
-                // do the boolean operation
-                openvdb::FloatGrid::Ptr copyOfCrackGrid = crackLevelSetGrid->deepCopy();
-                openvdb::FloatGrid::Ptr copyOfObjGrid = objectLevelSetGrid->deepCopy();
-                // Compute the difference (A / B) of the two level sets.
-                openvdb::tools::csgDifference(*copyOfObjGrid, *copyOfCrackGrid);
-                openvdb::FloatGrid::Ptr csgSubtractedObjGrid = copyOfObjGrid; // cutted piece
-                // list of fragment pieces after cutting (as level set grids)
-                std::vector<openvdb::FloatGrid::Ptr> fragmentLevelSetGridPtrList;
-                openvdb::tools::segmentSDF(*csgSubtractedObjGrid, fragmentLevelSetGridPtrList);
-
-
-
-
-                // for each fragment level
-                for (unsigned int i = 0; i < fragmentLevelSetGridPtrList.size(); ++i) 
-                {
-                    meshObjFormat fullCutFragment;
-                    getSurfaceMeshFromVdbGrid(fragmentLevelSetGridPtrList[i],1000000, fullCutFragment);
-                    writeObjFile(fullCutFragment.vertices, fullCutFragment.faces, "./output/partialCutFragment_"+std::to_string(i));
-                }
+                const Eigen::Vector3d p = crackSurfaceGeneric.m.vertices[i];
+                myMeshPoints_crack.push_back(openvdb::Vec3f(p[0], p[1], p[2]));
             }
-            break;
+            std::vector<openvdb::Vec3I> myMeshTris_crack;
+            for (int i = 0; i < crackSurfaceGeneric.triangulatedFaces.size() / 3; ++i) 
+            {
+                myMeshTris_crack.push_back(openvdb::Vec3I(crackSurfaceGeneric.triangulatedFaces[3 * i + 0], crackSurfaceGeneric.triangulatedFaces[3 * i + 1], crackSurfaceGeneric.triangulatedFaces[3 * i + 2]));
+            }
 
+
+
+            openvdb::FloatGrid::Ptr crackLevelSetGrid = openvdb::tools::meshToUnsignedDistanceField<openvdb::FloatGrid>(
+                *transform,
+                myMeshPoints_crack,
+                myMeshTris_crack,
+                std::vector<openvdb::Vec4I>(),
+                3);
+
+            for (openvdb::FloatGrid::ValueOnIter iter = crackLevelSetGrid->beginValueOn(); iter; ++iter) {
+                float dist = iter.getValue();
+                float value = dist - std::sqrt(3 * std::pow(parameters.vdbVoxelSize, 2));
+                iter.setValue(value);
+            }
+            crackLevelSetGrid->setGridClass(openvdb::GRID_LEVEL_SET);
+
+
+
+
+            // convert object mesh to vdb grid
+            GenericMesh objectMeshGeneric;
+            objectMeshGeneric.m.vertices = objectMesh.vertices;
+            objectMeshGeneric.m.faces = objectMesh.faces;
+            triangulateGenericMesh(objectMeshGeneric);
+
+
+            std::vector<openvdb::Vec3f> myMeshPoints_object;
+            for (int i = 0; i < objectMeshGeneric.m.vertices.size(); ++i) 
+            {
+                const Eigen::Vector3d p = objectMeshGeneric.m.vertices[i];
+                myMeshPoints_object.push_back(openvdb::Vec3f(p[0], p[1], p[2]));
+            }
+            std::vector<openvdb::Vec3I> myMeshTris_object;
+            for (int i = 0; i < objectMeshGeneric.triangulatedFaces.size() / 3; ++i) 
+            {
+                myMeshTris_object.push_back(openvdb::Vec3I(objectMeshGeneric.triangulatedFaces[3 * i + 0], objectMeshGeneric.triangulatedFaces[3 * i + 1], objectMeshGeneric.triangulatedFaces[3 * i + 2]));
+            }
+
+
+            // create a float grid containing the level representation of the sphere mesh
+            openvdb::FloatGrid::Ptr objectLevelSetGrid = openvdb::tools::meshToLevelSet<openvdb::FloatGrid>(
+                *transform,
+                myMeshPoints_object,
+                myMeshTris_object);
+            objectLevelSetGrid->setGridClass(openvdb::GRID_LEVEL_SET);
+
+
+
+            // do the boolean operation
+            openvdb::FloatGrid::Ptr copyOfCrackGrid = crackLevelSetGrid->deepCopy();
+            openvdb::FloatGrid::Ptr copyOfObjGrid = objectLevelSetGrid->deepCopy();
+            // Compute the difference (A / B) of the two level sets.
+            openvdb::tools::csgDifference(*copyOfObjGrid, *copyOfCrackGrid);
+            openvdb::FloatGrid::Ptr csgSubtractedObjGrid = copyOfObjGrid; // cutted piece
+            // list of fragment pieces after cutting (as level set grids)
+            std::vector<openvdb::FloatGrid::Ptr> fragmentLevelSetGridPtrList;
+            openvdb::tools::segmentSDF(*csgSubtractedObjGrid, fragmentLevelSetGridPtrList);
+
+
+
+
+            // for each fragment level
+            for (unsigned int i = 0; i < fragmentLevelSetGridPtrList.size(); ++i) 
+            {
+                meshObjFormat fullCutFragment;
+                getSurfaceMeshFromVdbGrid(fragmentLevelSetGridPtrList[i],1000000, fullCutFragment);
+                writeObjFile(fullCutFragment.vertices, fullCutFragment.faces, inputPara[0] + "/" + "fullCutFragment_"+std::to_string(i));
+            }
+
+            
+           
         }
+        else if(cuttingMethod == "OPENVDB_PARTIAL")
+        {
+
+            // define openvdb linear transformation
+            openvdb::math::Transform::Ptr transform = openvdb::math::Transform::createLinearTransform(parameters.vdbVoxelSize);
+
+            
+            // convert crack surface mesh to vdb grid
+            GenericMesh crackSurfaceGeneric;
+            crackSurfaceGeneric.m.vertices = crackSurfacePartialCut.vertices;
+            crackSurfaceGeneric.m.faces = crackSurfacePartialCut.faces;
+            triangulateGenericMesh(crackSurfaceGeneric);
+
+
+            std::vector<openvdb::Vec3f> myMeshPoints_crack;
+            for (int i = 0; i < crackSurfaceGeneric.m.vertices.size(); ++i) 
+            {
+                const Eigen::Vector3d p = crackSurfaceGeneric.m.vertices[i];
+                myMeshPoints_crack.push_back(openvdb::Vec3f(p[0], p[1], p[2]));
+            }
+            std::vector<openvdb::Vec3I> myMeshTris_crack;
+            for (int i = 0; i < crackSurfaceGeneric.triangulatedFaces.size() / 3; ++i) 
+            {
+                myMeshTris_crack.push_back(openvdb::Vec3I(crackSurfaceGeneric.triangulatedFaces[3 * i + 0], crackSurfaceGeneric.triangulatedFaces[3 * i + 1], crackSurfaceGeneric.triangulatedFaces[3 * i + 2]));
+            }
+
+
+
+            openvdb::FloatGrid::Ptr crackLevelSetGrid = openvdb::tools::meshToUnsignedDistanceField<openvdb::FloatGrid>(
+                *transform,
+                myMeshPoints_crack,
+                myMeshTris_crack,
+                std::vector<openvdb::Vec4I>(),
+                3);
+
+            for (openvdb::FloatGrid::ValueOnIter iter = crackLevelSetGrid->beginValueOn(); iter; ++iter) {
+                float dist = iter.getValue();
+                float value = dist - std::sqrt(3 * std::pow(parameters.vdbVoxelSize, 2));
+                iter.setValue(value);
+            }
+            crackLevelSetGrid->setGridClass(openvdb::GRID_LEVEL_SET);
+
+
+
+
+            // convert object mesh to vdb grid
+            GenericMesh objectMeshGeneric;
+            objectMeshGeneric.m.vertices = objectMesh.vertices;
+            objectMeshGeneric.m.faces = objectMesh.faces;
+            triangulateGenericMesh(objectMeshGeneric);
+
+
+            std::vector<openvdb::Vec3f> myMeshPoints_object;
+            for (int i = 0; i < objectMeshGeneric.m.vertices.size(); ++i) 
+            {
+                const Eigen::Vector3d p = objectMeshGeneric.m.vertices[i];
+                myMeshPoints_object.push_back(openvdb::Vec3f(p[0], p[1], p[2]));
+            }
+            std::vector<openvdb::Vec3I> myMeshTris_object;
+            for (int i = 0; i < objectMeshGeneric.triangulatedFaces.size() / 3; ++i) 
+            {
+                myMeshTris_object.push_back(openvdb::Vec3I(objectMeshGeneric.triangulatedFaces[3 * i + 0], objectMeshGeneric.triangulatedFaces[3 * i + 1], objectMeshGeneric.triangulatedFaces[3 * i + 2]));
+            }
+
+
+            // create a float grid containing the level representation of the sphere mesh
+            openvdb::FloatGrid::Ptr objectLevelSetGrid = openvdb::tools::meshToLevelSet<openvdb::FloatGrid>(
+                *transform,
+                myMeshPoints_object,
+                myMeshTris_object);
+            objectLevelSetGrid->setGridClass(openvdb::GRID_LEVEL_SET);
+
+
+
+            // do the boolean operation
+            openvdb::FloatGrid::Ptr copyOfCrackGrid = crackLevelSetGrid->deepCopy();
+            openvdb::FloatGrid::Ptr copyOfObjGrid = objectLevelSetGrid->deepCopy();
+            // Compute the difference (A / B) of the two level sets.
+            openvdb::tools::csgDifference(*copyOfObjGrid, *copyOfCrackGrid);
+            openvdb::FloatGrid::Ptr csgSubtractedObjGrid = copyOfObjGrid; // cutted piece
+            // list of fragment pieces after cutting (as level set grids)
+            std::vector<openvdb::FloatGrid::Ptr> fragmentLevelSetGridPtrList;
+            openvdb::tools::segmentSDF(*csgSubtractedObjGrid, fragmentLevelSetGridPtrList);
+
+
+
+
+            // for each fragment level
+            for (unsigned int i = 0; i < fragmentLevelSetGridPtrList.size(); ++i) 
+            {
+                meshObjFormat fullCutFragment;
+                getSurfaceMeshFromVdbGrid(fragmentLevelSetGridPtrList[i],1000000, fullCutFragment);
+                writeObjFile(fullCutFragment.vertices, fullCutFragment.faces, inputPara[0] + "/" + "partialCutFragment_"+std::to_string(i));
+            }
+        
+        }
+        else
+        {
+            std::cout<<"The cutting method is incorrect!"<<std::endl;
+        }
+   
+
+        
         
 
     }
