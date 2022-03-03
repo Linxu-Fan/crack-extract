@@ -1,81 +1,14 @@
 
-
-#include "mpm-fracture/mpm-fracture.h"
 #include "mpm-fracture/object.h"
-#include "mpm-fracture/params.h"
+#include "mpm-fracture/mpm-fracture.h"
 #include "mpm-fracture/extractCrack.h"
 #include "mpm-fracture/utils.h" // must be included first because of "#define _USE_MATH_DEFINES" on windows
 
+
+
 #include <igl/decimate.h>
-#include <nlohmann/json.hpp>
 #include <thread>
 
-
-#include <BulletDynamics/ConstraintSolver/btNNCGConstraintSolver.h>
-#include <BulletDynamics/MLCPSolvers/btMLCPSolver.h>
-#include <BulletDynamics/MLCPSolvers/btDantzigSolver.h>
-
-///
-
-std::vector<ColliderData> storedData;
-std::map<std::string, double> g_rigidBodyVolumes;
-std::vector<std::pair<std::string, int>> g_mpmFractureSimTimestepCounts;
-
-std::map<std::string, std::vector<unsigned long long>> g_time_profiles;
-std::stack<std::unique_ptr<mini_timer>> g_timestack;
-
-// quick hack to control maximum number of rigid body timesteps in which we should start fracture sim
-int stopAfterNFractureInvolvingRbTimesteps = std::numeric_limits<uint32_t>::max();
-int numFractureInvolvingRbTimestep = 0;
-
-struct KinematicRBInfo
-{
-    btRigidBody *rbPtr = nullptr;
-    btVector3 linearVelocity = btVector3(0, 0, 0);
-    btVector3 angularVelocity = btVector3(0, 0, 0);
-};
-
-// We use this callback function to move the kinematic objects of a given scene
-void kinematicPreTickCallback(btDynamicsWorld *world, btScalar deltaTime)
-{
-    std::vector<KinematicRBInfo> *kinematicRBs = reinterpret_cast<std::vector<KinematicRBInfo> *>(world->getWorldUserInfo());
-    ASSERT(kinematicRBs != nullptr);
-
-    // for each kinematic object in the list
-    for (std::vector<KinematicRBInfo>::iterator rbit = kinematicRBs->begin(); rbit != kinematicRBs->end(); ++rbit)
-    {
-        btRigidBody *rb = rbit->rbPtr;
-        const btVector3 &linearVelocity = rbit->linearVelocity;
-        const btVector3 &angularVelocity = rbit->angularVelocity;
-
-        // calculate the predicted transform for current kinematic object
-        btTransform predictedTrans;
-        btTransformUtil::integrateTransform(rb->getWorldTransform(), linearVelocity, angularVelocity, deltaTime, predictedTrans);
-
-        rb->getMotionState()->setWorldTransform(predictedTrans);
-    }
-}
-
-/**@brief Get the euler angles from this quaternion
- * @param yaw Angle around Z
- * @param pitch Angle around Y
- * @param roll Angle around X */
-void getEulerZYX(btScalar &yawZ, btScalar &pitchY, btScalar &rollX, const btQuaternion &q)
-{
-    btScalar squ;
-    btScalar sqx;
-    btScalar sqy;
-    btScalar sqz;
-    btScalar sarg;
-    sqx = q.x() * q.x();
-    sqy = q.y() * q.y();
-    sqz = q.z() * q.z();
-    squ = q.w() * q.w();
-    rollX = btAtan2(2 * (q.y() * q.z() + q.w() * q.x()), squ - sqx - sqy + sqz);
-    sarg = btScalar(-2.) * (q.x() * q.z() - q.w() * q.y());
-    pitchY = sarg <= btScalar(-1.0) ? btScalar(-0.5) * SIMD_PI : (sarg >= btScalar(1.0) ? btScalar(0.5) * SIMD_PI : btAsin(sarg));
-    yawZ = btAtan2(2 * (q.x() * q.y() + q.w() * q.z()), squ + sqx - sqy - sqz);
-}
 
 
 
@@ -95,7 +28,6 @@ void getSurfaceMeshFromVdbGrid(openvdb::FloatGrid::Ptr bareMeshVdbGridPtr,int de
     for (size_t i = 0; i < volumeToMeshHandle.pointListSize(); i++)
     {
         openvdb::Vec3s &v = (*verts)[i];
-        // NOTE: This is a hack! The y coord is negated because of mixup with blender's XZY coordinate system ****************************************************************************************
         pMesh->vertices.push_back(trimesh::vec3(v[0], v[1], v[2]));
 
     }
@@ -174,6 +106,10 @@ void getSurfaceMeshFromVdbGrid(openvdb::FloatGrid::Ptr bareMeshVdbGridPtr,int de
 // the input particles may locate in the negative domain. This function projects them to the positive domain
 void preprocessing(std::string crackFilePath, std::string cutObjectFilePath, parametersSim* parameters, std::vector<Particle>* particleVec, meshObjFormat* objectMesh)
 {
+
+    std::string path = "./output/fixedParticles.txt";
+	std::ofstream outfile2(path, std::ios::trunc);
+
     // project damaged particles to the positive domain
     // read damaged particles
     std::ifstream inf;
@@ -188,7 +124,21 @@ void preprocessing(std::string crackFilePath, std::string cutObjectFilePath, par
         Eigen::Vector3d ivel = { 0, 0, 0 };
         double iDp = atof(s3.c_str());
         (*particleVec).push_back(Particle(ipos, ivel, 0, 0, iDp));
+
+        if(iDp >= 0.97)
+        {
+            iDp = 1.0;
+        }
+        if(ipos[0]>=0.07 && ipos[0]<=1.04 && ipos[1]>=0.07 && ipos[1]<=1.04 && ipos[2]<=0.05 )
+        {
+            outfile2 << std::scientific << std::setprecision(8)<< ipos[0] << " " << ipos[1] << " " << ipos[2] << " "<<iDp << std::endl;
+        }
+		
     }
+ 
+	outfile2.close();
+
+    
     double xmin = (*particleVec)[0].pos[0], xmax = (*particleVec)[0].pos[0], ymin = (*particleVec)[0].pos[1], ymax = (*particleVec)[0].pos[1], zmin = (*particleVec)[0].pos[2], zmax = (*particleVec)[0].pos[2];
     for (int km = 0; km < (*particleVec).size(); km++) 
     {
@@ -211,6 +161,7 @@ void preprocessing(std::string crackFilePath, std::string cutObjectFilePath, par
 
     // read cutting object's mesh
     meshObjFormat objectMeshTmp = readObj(cutObjectFilePath);
+
     (*objectMesh).vertices = objectMeshTmp.vertices;
     for(int m = 0; m < (*objectMesh).vertices.size(); m++)
     {
@@ -260,25 +211,28 @@ void postprocessing(parametersSim* parameters, std::tuple<bool, meshObjFormat,  
 #include <igl/AABB.h>
 #include <igl/point_mesh_squared_distance.h>
 
-int main(int argc, char *argv[])
+int main()
 {
     // the resolution of crack faces
-    double dx = 0.01;
-
     // parameters
     parametersSim parameters;
-    parameters.dx = 0.002; 
-    parameters.vdbVoxelSize = 0.0002;
-    std::string crackFilePath = "/home/floyd/Linxu/clearCode/mpm-fracture/build/output/particles4500.txt";
-    std::string cutObjectFilePath = "/home/floyd/Linxu/clearCode/mpm-fracture/build/output/fixed__sf.obj";
+    parameters.dx = 0.0035; 
+    parameters.vdbVoxelSize = 0.00035;
+    std::string crackFilePath = "/home/floyd/Linxu/crackExtraction/crackExtraction/build/output/particles.txt";
+    std::string cutObjectFilePath = "/home/floyd/Linxu/crackExtraction/crackExtraction/build/output/object.obj";
     std::vector<Particle> particleVec;
     meshObjFormat objectMesh;
 
+    std::cout<<"1"<<std::endl;
+
     // extract the crack surface
     preprocessing(crackFilePath, cutObjectFilePath, &parameters, &particleVec, &objectMesh); 
+    
     std::tuple<bool, meshObjFormat,  meshObjFormat, std::vector<meshObjFormat> > result =  extractCrackSurface(&particleVec, parameters);
+    
     postprocessing(&parameters, &result, &objectMesh);
 
+    
 
     // output the crack surface and fragments
     meshObjFormat crackSurfacePartialCut = std::get<1>(result);
@@ -286,18 +240,18 @@ int main(int argc, char *argv[])
     meshObjFormat crackSurfaceFullCut = std::get<2>(result);
     writeObjFile(crackSurfaceFullCut.vertices, crackSurfaceFullCut.faces, "./output/fullCutSurface");
     std::vector<meshObjFormat> fragments = std::get<3>(result);
-    for(int i = 0; i < fragments.size(); i++)
-    {
-        writeObjFile(fragments[i].vertices, fragments[i].faces, "./output/fragment_"+std::to_string(i));
-    }
-    writeObjFile(objectMesh.vertices, objectMesh.faces, "./output/object");
+    // for(int i = 0; i < fragments.size(); i++)
+    // {
+    //     writeObjFile(fragments[i].vertices, fragments[i].faces, "./output/fragment_"+std::to_string(i));
+    // }
+    // writeObjFile(objectMesh.vertices, objectMesh.faces, "./output/object");
 
-
+    
     // define the cutting method
     // case 0: complete cut with MCUT
     // case 1: complete cut with openVDB
     // case 2: partial cut with openVDB
-    int cuttingMethod = 0;
+    int cuttingMethod = 2;
     switch(cuttingMethod)
     {
 

@@ -51,7 +51,7 @@ struct parametersSim {
 	double lch = std::sqrt(3) * dx;
 	double HsBar = thetaf * thetaf / 2 / E / Gf;
 	double Hs = HsBar * lch / (1 - HsBar * lch);
-	double damageThreshold = 0.97; // after this threshold, the damage value is updated by a sigmoid function to let it approach 1 but never reach 1
+	double damageThreshold = 0.97; // after this threshold, 
 	double sigmoidK = 5; // this parameter control the curevature of the sigmoid function. It is recommend that it is bigger than 5
 
 

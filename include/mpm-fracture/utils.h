@@ -34,21 +34,6 @@
 #include <Eigen/Core>
 #include <Eigen/Dense>
 
-// bullet
-#ifdef _WIN32
-#include <BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
-#include <BulletCollision/Gimpact/btGImpactShape.h>
-#include <btBulletDynamicsCommon.h>
-#else
-#include <BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
-#include <BulletCollision/Gimpact/btGImpactShape.h>
-#include <btBulletDynamicsCommon.h>
-#include <BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolverMt.h>
-#include <BulletCollision/CollisionDispatch/btCollisionDispatcherMt.h>
-#include <BulletDynamics/Dynamics/btDiscreteDynamicsWorldMt.h>
-//btDiscreteDynamicsWorldMt
-#endif
-
 // openvdb
 #include <openvdb/openvdb.h>
 #include <openvdb/tools/Composite.h>
@@ -75,6 +60,14 @@
 
 
 #include "mpm-fracture/mpm_utils.h"
+
+
+
+#include <unordered_map>
+
+#define STALE_FLOAT_PARAM (-1.0f)
+#define STALE_FLOAT3_PARAM btVector3(-1e10, -1e10, -1e10)
+#define STALE_INT_PARAM (-1)
 
 
 
@@ -248,11 +241,6 @@ struct crackSurface {
 };
 
 
-// name of rigid body object
-static std::string &getName(const btCollisionObject *obj)
-{
-    return *((std::string *)obj->getUserPointer());
-}
 
 
 struct meshObjFormat
@@ -305,47 +293,12 @@ static std::string readTextFile(const std::string& fpath)
     return str;
 }
 
-static btVector3 toBullet(const trimesh::point& in)
-{
-    return btVector3(in[0], in[1], in[2]);
-}
-
-static btVector3 toBullet(const Eigen::Vector3f& in)
-{
-    return btVector3(in[0], in[1], in[2]);
-}
 
 static trimesh::point toTrimesh(const Eigen::Vector3f& in)
 {
     return trimesh::point((in[0]), (in[1]), (in[2]));
 }
 
-static Eigen::Vector3f toEigen(const btVector3& in)
-{
-    return Eigen::Vector3f(in[0], in[1], in[2]);
-}
-
-static Eigen::Vector3f toEigen(const trimesh::point& in)
-{
-    return Eigen::Vector3f(in[0], in[1], in[2]);
-}
-
-static btVector3 fromEigen(const Eigen::Vector3f& in)
-{
-    return btVector3(in[0], in[1], in[2]);
-}
-
-static btVector3 fromTrimesh(const trimesh::point& in)
-{
-    return btVector3(in[0], in[1], in[2]);
-}
-
-static trimesh::point toTrimesh(const btVector3& in)
-{
-    return trimesh::point(in[0], in[1], in[2]);
-}
-
-extern void toTrimesh(trimesh::TriMesh& tm, const GenericMesh& gm);
 
 extern void writeVDBMesh(const char* filename, openvdb::tools::VolumeToMesh& mesh);
 extern void saveOpenVDBGrids(const openvdb::GridPtrVec& grids, const std::string& outDir, const std::string& name);

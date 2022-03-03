@@ -165,22 +165,6 @@ openvdb::FloatGrid::Ptr crackSurfaceMeshToLevelSetGrid(
 
     myCrackMeshLevelSetGrid->setGridClass(openvdb::GRID_LEVEL_SET);
 
-    //{
-    //    std::string fname = (myCrackMeshLevelSetGrid->getName() + ".obj");
-    //    printf("dump crack-mesh volume-mesh: %s\n", fname.c_str());
-    //    openvdb::tools::VolumeToMesh vol2Mesh;
-    //     vol2Mesh(*myCrackMeshLevelSetGrid);
-    //
-    //    writeVDBMesh(fname.c_str(), vol2Mesh);
-    //  }
-
-    //openvdb::tools::signedFloodFill(myCrackMeshLevelSetGrid->tree());
-
-    //for (auto iter = bunnyMeshLevelSetGrid->beginValueOff(); iter; ++iter) {
-    // if (iter.getValue() < 0.0) {
-    //   iter.setActiveState(true);
-    // }
-    // }
 
 
 
@@ -450,59 +434,16 @@ void triangulateGenericMesh(GenericMesh& m)
 //
 //    For the first N-2 triangles, the first edge listed is always an
 //    internal diagonal.
-#if 0
-            std::cout << "poly2D.size()=" << poly2D[0].size() << std::endl;
-            std::vector<double> x, y;
-            for (int i =0; i < poly2D[0].size(); ++i)
-            {
-              x.push_back(poly2D[0][i][0]);
-              y.push_back(poly2D[0][i][1]);
 
-			  std::cout << poly2D[0][i][0] << " " << poly2D[0][i][1] << std::endl;
-            }
-			std::cout << "1111" << std::endl << std::endl;
-
-			for (int k = 0; k < x.size(); k++)
-			{
-				std::cout << x[k] << " " << y[k] << std::endl;
-			}
-            int *indices_ = polygon_triangulate(poly2D[0].size(), x.data(), y.data());
-			std::cout << "2222" << std::endl;
-#endif
             std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(poly2D);
-#if 0
 
-            int numTriangles = poly2D[0].size() - 2;
-            for (int i = 0; i < numTriangles*3; ++i)
-            {
-              indices.push_back(indices_[i]);
-            }
-            delete[] indices_;
-#endif
-            // std::cout << "indices=" << indices.size() << std::endl;
             std::set<uint32_t> indicesSet;
             for (int j = 0; j < (int)indices.size(); ++j) {
                 ASSERT(imap.find(indices[j]) != imap.cend());
                 indices[j] = imap[indices[j]]; // from local to global
                 indicesSet.insert(indices[j]);
             }
-#if 0
-            if (indicesSet.size() != imap.size()) {
-                std::ofstream f("failedpolygon.off");
-                f << "OFF\n";
-                f << poly3d.size() << " 1 0\n";
 
-                for (int i = 0; i < poly3d.size(); ++i) {
-                    std::cout << poly2D[0][i][0] << " " << poly2D[0][i][1] << std::endl;
-                    f << poly3d[i][0] << " " << poly3d[i][1] << " " << poly3d[i][2] << std::endl;
-                }
-
-                f << numVertsInFace << " ";
-                for (int i = 0; i < numVertsInFace; ++i) {
-                    f << i << " ";
-                }
-            }
-#endif
             ASSERT(indicesSet.size() == imap.size());
 
             // NOTE: inserting indices in reverse order because "mapbox" winding order is clockwise

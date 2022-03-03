@@ -35,12 +35,9 @@ message(STATUS "EXTRA_INCLUDES = ${EXTRA_INCLUDES}")
 add_executable(
     crackExtraction 
     src/main.cpp 
-    src/rigid-body-object.cpp
     src/utility-functions.cpp
-    src/mpm.cpp
     src/damageGradient.cpp 
     src/extractCrack.cpp 
-    src/particles.cpp 
     src/weights.cpp
     src/polygon_triangulate.cpp)
 
