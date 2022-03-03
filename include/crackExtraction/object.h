@@ -8,15 +8,7 @@
 #include <igl/facet_components.h>
 #include <igl/remove_unreferenced.h>
 #include <igl/gaussian_curvature.h>
-//#include <igl/per_corner_normals.h>
-// #include <igl/per_face_normals.h>
-// #include <igl/per_vertex_normals.h>
-// #include <igl/principal_curvature.h>
-// #include <igl/point_mesh_squared_distance.h>
-// #include <igl/cotmatrix.h>
-// #include <igl/invert_diag.h>
-// #include <igl/massmatrix.h>
-// #include <igl/centroid.h>
+
 
 
 #include <openvdb/openvdb.h>
@@ -47,8 +39,6 @@ static void meshObjToTriMesh(const meshObjFormat& mesh, trimesh::TriMesh *triMes
 }
 
 
-
-
 static void TriMeshToMeshObj(trimesh::TriMesh *triMesh, meshObjFormat *&meshOut)
 {
     meshOut = new meshObjFormat;
@@ -66,7 +56,6 @@ static void TriMeshToMeshObj(trimesh::TriMesh *triMesh, meshObjFormat *&meshOut)
         (*meshOut).faces.push_back(face);
     }
 }
-
 
 
 void toLibiglMesh(Eigen::MatrixXd &V, Eigen::MatrixXi &F, trimesh::TriMesh &tm)
@@ -89,7 +78,6 @@ void toLibiglMesh(Eigen::MatrixXd &V, Eigen::MatrixXi &F, trimesh::TriMesh &tm)
         F(i, 2) = f[2];
     }
 }
-
 
 
 void toTrimesh(trimesh::TriMesh &tm, const Eigen::MatrixXd &V, const Eigen::MatrixXi &F)

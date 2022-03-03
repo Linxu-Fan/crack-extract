@@ -2035,48 +2035,10 @@ meshObjFormat upsampleMesh(parametersSim param, meshObjFormat *inputMesh)
     averageEdgeLength = averageEdgeLength / countNum;
 
 
-    if(averageEdgeLength <= param.drx)
-    {
-        outputMesh.vertices = (*inputMesh).vertices;
-        outputMesh.faces = (*inputMesh).faces;
-    }
-    else
-    {
-        int sampleStep = trunc(log(averageEdgeLength) / log(2));
-        sampleStep = 3;
-        // upsample a triangle mesh
-        Eigen::MatrixXd V((*inputMesh).vertices.size() ,3);
-        Eigen::MatrixXi F((*inputMesh).faces.size(), 3);
-        for(int m = 0; m <( *inputMesh).vertices.size(); m++)
-        {
-            V(m , 0) = (*inputMesh).vertices[m][0];
-            V(m , 1) = (*inputMesh).vertices[m][1];
-            V(m , 2) = (*inputMesh).vertices[m][2];
-        }
-        for(int m = 0; m <( *inputMesh).faces.size(); m++)
-        {
-            F(m , 0) = (*inputMesh).faces[m][0];
-            F(m , 1) = (*inputMesh).faces[m][1];
-            F(m , 2) = (*inputMesh).faces[m][2];
-        }
-        igl::upsample(V, F, sampleStep);
 
-        // get the upsampled mesh
-        for(int m = 0; m <V.rows(); m++)
-        {
-            outputMesh.vertices.push_back(V.row(m));
-        }
-        for(int m = 0; m <F.rows(); m++)
-        {
-            std::vector<int> face;
-            face.push_back(F(m,0));
-            face.push_back(F(m,1));
-            face.push_back(F(m,2));
-            outputMesh.faces.push_back(face);
-        }
+    outputMesh.vertices = (*inputMesh).vertices;
+    outputMesh.faces = (*inputMesh).faces;
 
-
-    }
 
   
     return outputMesh;

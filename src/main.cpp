@@ -1,7 +1,7 @@
 
 #include "crackExtraction/object.h"
 #include "crackExtraction/extractCrack.h"
-#include "crackExtraction/utils.h" // must be included first because of "#define _USE_MATH_DEFINES" on windows
+#include "crackExtraction/utils.h" 
 
 
 

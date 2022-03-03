@@ -4,7 +4,6 @@
 
 #include <cmath>
 
-
 #include "crackExtraction/utils.h"
 #include "crackExtraction/particles.h"
 #include "crackExtraction/weights.h"
