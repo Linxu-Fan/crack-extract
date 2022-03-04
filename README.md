@@ -24,14 +24,14 @@
 # How to use?
 * Write a text file and put the file into the build directory. Then pass the text file as the argument to the executable. The text file has 6 lines. See the demo file in the folder "example".
     - the folder contains the object and point clouds file.
-    - 2) the point cloud file name. The file has four columns which are separated by space. The first three columns are the (x,y,z) coordinate and the last one is the phase value.
-    - 3) the object file name. It should be in .obj format.
-    - 4) the cutting method.
+    - the point cloud file name. The file has four columns which are separated by space. The first three columns are the (x,y,z) coordinate and the last one is the phase value.
+    - the object file name. It should be in .obj format.
+    - the cutting method.
         * "OPENVDB_FULL": full cut with openVDB. No partial crack is enabled.
         * "OPENVDB_PARTIAL": partial cut with openVDB. Partial crack is enabled.
         * "MCUT": direct mesh cutting with MCUT.        
-    - 5) the medial surface resolution which should be roughly twice of the average point space.
-    - 6) the openVDB voxel size. The cutting gap is thinner with a small voxel size.
+    - the medial surface resolution which should be roughly twice of the average point space.
+    - the openVDB voxel size. The cutting gap is thinner with a small voxel size.
 
 # Examples: 
 
