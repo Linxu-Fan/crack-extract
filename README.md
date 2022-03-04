@@ -33,11 +33,11 @@
     - 5) the medial surface resolution which should be roughly twice of the average point space.
     - 6) the openVDB voxel size. The cutting gap is thinner with a small voxel size.
 
-# Examples: 1) Mode 1 test; 2) Glass
+# Examples: 
 
 * Mode 1 test 
-!(./example/mode1/mode1.png)
+![](./example/mode1/mode1.png)
 
 * Glass
-!(./example/glass/glass.png)
+![](./example/glass/glass.png)
 
