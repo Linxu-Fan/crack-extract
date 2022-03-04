@@ -13,7 +13,7 @@
 
 
 // find the surface mesh from a vdb grid
-void getSurfaceMeshFromVdbGrid(openvdb::FloatGrid::Ptr bareMeshVdbGridPtr,int decimateTarget, meshObjFormat& fragmentVolume)
+void getSurfaceMeshFromVdbGrid(openvdb::FloatGrid::Ptr bareMeshVdbGridPtr,meshObjFormat& fragmentVolume)
 {
     openvdb::tools::VolumeToMesh volumeToMeshHandle;
     volumeToMeshHandle(*bareMeshVdbGridPtr);
@@ -64,40 +64,17 @@ void getSurfaceMeshFromVdbGrid(openvdb::FloatGrid::Ptr bareMeshVdbGridPtr,int de
     Eigen::MatrixXi F(pMesh->faces.size(), 3);
     for(int i = 0; i < pMesh->vertices.size(); i++)
     {
-        V(i,0) = pMesh->vertices[i][0];
-        V(i,1) = pMesh->vertices[i][1];
-        V(i,2) = pMesh->vertices[i][2];
+        Eigen::Vector3d p = {pMesh->vertices[i][0], pMesh->vertices[i][1], pMesh->vertices[i][2]};
+        fragmentVolume.vertices.push_back(p);
     }
     for(int i = 0; i < pMesh->faces.size(); i++)
     {
-        F(i,0) = pMesh->faces[i][0];
-        F(i,1) = pMesh->faces[i][1];
-        F(i,2) = pMesh->faces[i][2];
-    }
-
-
-
-    Eigen::MatrixXd U;
-    Eigen::MatrixXi G;
-    Eigen::VectorXi J;
-    Eigen::VectorXi I;
-    igl::decimate(V, F, decimateTarget, U, G, J, I);
-    for (int i = 0; i < U.rows(); ++i)
-    {
-        Eigen::Vector3d p = {U(i, 0), U(i, 1), U(i, 2)};
-        fragmentVolume.vertices.push_back(p);
-    }
-    for (int i = 0; i < G.rows(); ++i)
-    {
         std::vector<int> f;
-        f.push_back(G(i, 0));
-        f.push_back(G(i, 1));
-        f.push_back(G(i, 2));
+        f.push_back(pMesh->faces[i][0]);
+        f.push_back(pMesh->faces[i][1]);
+        f.push_back(pMesh->faces[i][2]);
         fragmentVolume.faces.push_back(f);
     }
-
-
-
 
 }
 
@@ -238,8 +215,6 @@ int main(int argc, char *argv[])
     parametersSim parameters;
     parameters.dx = std::stod(inputPara[4]); 
     parameters.vdbVoxelSize = std::stod(inputPara[5]);
-    // std::string crackFilePath = "/home/floyd/Linxu/crackExtraction/crackExtraction/build/output/particles.txt";
-    // std::string cutObjectFilePath = "/home/floyd/Linxu/crackExtraction/crackExtraction/build/output/object.obj";
     std::string crackFilePath = inputPara[0] + "/" + inputPara[1];
     std::string cutObjectFilePath = inputPara[0] + "/" + inputPara[2];
     std::vector<Particle> particleVec;
@@ -376,7 +351,7 @@ int main(int argc, char *argv[])
             for (unsigned int i = 0; i < fragmentLevelSetGridPtrList.size(); ++i) 
             {
                 meshObjFormat fullCutFragment;
-                getSurfaceMeshFromVdbGrid(fragmentLevelSetGridPtrList[i],1000000, fullCutFragment);
+                getSurfaceMeshFromVdbGrid(fragmentLevelSetGridPtrList[i], fullCutFragment);
                 writeObjFile(fullCutFragment.vertices, fullCutFragment.faces, inputPara[0] + "/" + "fullCutFragment_"+std::to_string(i));
             }
 
@@ -474,7 +449,7 @@ int main(int argc, char *argv[])
             for (unsigned int i = 0; i < fragmentLevelSetGridPtrList.size(); ++i) 
             {
                 meshObjFormat fullCutFragment;
-                getSurfaceMeshFromVdbGrid(fragmentLevelSetGridPtrList[i],1000000, fullCutFragment);
+                getSurfaceMeshFromVdbGrid(fragmentLevelSetGridPtrList[i], fullCutFragment);
                 writeObjFile(fullCutFragment.vertices, fullCutFragment.faces, inputPara[0] + "/" + "partialCutFragment_"+std::to_string(i));
             }
         

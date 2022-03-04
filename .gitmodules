@@ -1,18 +1,9 @@
 [submodule "extern/trimesh2"]
 	path = extern/trimesh2
 	url = https://github.com/Forceflow/trimesh2.git
-[submodule "extern/pystring"]
-	path = extern/pystring
-	url = https://github.com/chitalu/pystring.git
 [submodule "extern/openvdb"]
 	path = extern/openvdb
 	url = https://github.com/AcademySoftwareFoundation/openvdb.git
-[submodule "extern/MeshDecimation"]
-	path = extern/MeshDecimation
-	url = https://github.com/kmammou/MeshDecimation.git
-[submodule "extern/Fast-Quadric-Mesh-Simplification"]
-	path = extern/Fast-Quadric-Mesh-Simplification
-	url = https://github.com/sp4cerat/Fast-Quadric-Mesh-Simplification.git
 [submodule "extern/voro"]
 	path = extern/voro
 	url = https://github.com/chr1shr/voro.git

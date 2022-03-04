@@ -7,17 +7,6 @@ set (EIGEN_INCLUDE_DIR ${EXTERN_PROJECTS_DIR}/eigen CACHE STRING "eigen includes
 
 
 #
-# pystring
-#
-set (PYSTRING_PROJECT_DIR ${EXTERN_PROJECTS_DIR}/pystring CACHE STRING "location of pystring" )
-set (PYSTRING_INCLUDE_DIRS ${PYSTRING_PROJECT_DIR} CACHE INTERNAL "pystring include directories")
-set (PYSTRING_LIBRARIES pystring CACHE INTERNAL  "pystring libraries")
-
-add_library(pystring STATIC ${PYSTRING_PROJECT_DIR}/pystring.cpp)
-
-target_include_directories(pystring PUBLIC ${PYSTRING_INCLUDE_DIRS})
-
-#
 # trimesh
 #
 set(TRIMESH_PROJECT_DIR ${EXTERN_PROJECTS_DIR}/trimesh2 CACHE STRING "location of trimesh2" )
@@ -70,11 +59,6 @@ set (OPENVDB_PROJECT_DIR ${EXTERN_PROJECTS_DIR}/openvdb CACHE STRING "location o
 set (OPENVDB_INCLUDE_DIRS ${OPENVDB_PROJECT_DIR} CACHE INTERNAL "openvdb include directories")
 set (OPENVDB_LIBRARIES openvdb CACHE INTERNAL  "openvdb libraries")
 
-#
-# MeshDecimation /home/floyd/mpm-fracture/extern/Fast-Quadric-Mesh-Simplification/src.cmd
-#
-set(MESH_DECIMATION_PROJECT_DIR ${EXTERN_PROJECTS_DIR}/Fast-Quadric-Mesh-Simplification CACHE STRING "location of Fast-Quadric-Mesh-Simplification" )
-set (MESH_DECIMATION_INCLUDE_DIRS ${MESH_DECIMATION_PROJECT_DIR}/src.cmd CACHE INTERNAL "Fast-Quadric-Mesh-Simplification include directories")
 
 #
 # Voro++
@@ -101,9 +85,4 @@ set(MCUT_LIBRARIES mcut CACHE INTERNAL "")
 
 set(EARCUT_INCLUDE_DIRS ${EXTERN_PROJECTS_DIR}/earcut.hpp/include CACHE INTERNAL "") 
 
-#
-# triangle (triangle lib)
-#
-
-add_subdirectory(triangle)
 

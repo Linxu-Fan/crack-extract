@@ -27,8 +27,6 @@
 #include "TriMesh.h"
 #include "lineqn.h"
 
-// pystring
-#include "pystring.h"
 
 // eigen
 #include <Eigen/Core>
@@ -56,7 +54,6 @@
 // triangle.h
 #define REAL double
 #define VOID void
-#include "triangle/triangle.h"
 
 
 #include <unordered_map>
