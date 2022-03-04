@@ -22,7 +22,7 @@
         * use visual studio
 
 # How to use?
-* Write a text file and put the file into the build directory. Then pass the text file as the argument to the executable. The text file has 6 lines. See the demo file in the folder "[example](./example)".
+* Write a text file and put the file into the build directory. Then pass the text file as the argument to the executable. The text file has 6 lines. See the demo file in the folder "[example](./example/glass/input.txt)".
     - the folder contains the object and point clouds file.
     - the point cloud file name. The file has four columns which are separated by space. The first three columns are the (x,y,z) coordinate and the last one is the phase value.
     - the object file name. It should be in .obj format.
