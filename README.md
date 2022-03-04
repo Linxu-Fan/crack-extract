@@ -36,8 +36,8 @@
 # Examples: 1) Mode 1 test; 2) Glass
 
 * Mode 1 test 
-!(example/mode1/mode1.png)
+!(./example/mode1/mode1.png)
 
 * Glass
-!(example/glass/glass.png)
+!(./example/glass/glass.png)
 
