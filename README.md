@@ -5,7 +5,7 @@
 
 # How to build?
 
-* `git clone --recursive`
+* `git clone --recursive https://github.com/Linxu-Fan/crackExtraction.git`
 * `git checkout master`
 * `mkdir build && cd build`
 * call cmake
