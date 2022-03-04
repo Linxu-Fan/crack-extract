@@ -8,13 +8,7 @@
 * `git clone --recursive https://github.com/Linxu-Fan/crackExtraction.git`
 * `git checkout master`
 * `mkdir build && cd build`
-* call cmake
-    - if windows
-        * `cmake -DCMAKE_TOOLCHAIN_FILE=C:/dev/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows -A x64 -DOPENVDB_BUILD_VDB_VIEW=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_NO_SYSTEM_FROM_IMPORTED:BOOL=TRUE -DCMAKE_BUILD_TYPE=Release ..`
-          - NOTE: the cmake flags are needed because of OpenVDB
-    - else linux
-        * `cmake -DCMAKE_BUILD_TYPE=Release ..`
-    
+* `cmake -DCMAKE_BUILD_TYPE=Release ..`
 * build the code
     - If you are on Ubuntu 
         * run `make -j6 crackExtraction` 
