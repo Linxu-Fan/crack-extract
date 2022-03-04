@@ -21,6 +21,9 @@
     - else (Windows)
         * use visual studio
 
+* build [fTetWild](https://github.com/wildmeshing/fTetWild.git) (this is required for direct mesh cutting approach)
+    - copy the executable to the above build directory
+
 # How to use?
 * Write a text file and put the file into the build directory. Then pass the text file as the argument to the executable. The text file has 6 lines. See the demo file in the folder "[example](./example/glass/input.txt)".
     - the folder contains the object and point clouds file.
