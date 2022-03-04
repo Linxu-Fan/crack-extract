@@ -23,7 +23,7 @@
 
 # How to use?
 * Write a text file and put the file into the build directory. Then pass the text file as the argument to the executable. The text file has 6 lines. See the demo file in the folder "example".
-    - 1) the folder contains the object and point clouds file.
+    - the folder contains the object and point clouds file.
     - 2) the point cloud file name. The file has four columns which are separated by space. The first three columns are the (x,y,z) coordinate and the last one is the phase value.
     - 3) the object file name. It should be in .obj format.
     - 4) the cutting method.
