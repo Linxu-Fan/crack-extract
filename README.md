@@ -1,7 +1,7 @@
 
 # What is this?
 
-* This respository contains the code for the paper "Simulating brittle fracture with material points". The code uses voronoi diagram to approximate a medial surface from damaged points cloud. Although the code is used to extract crack for brittle fracture, it could nevertheless be used to approximate the medial surface of any shape with a particle representation. The input points have their coordinates(x,y,z), and phase filed value(0-1) where 0 represents a healthy point and 1 is a fully damaged point. The output is a surface approximating the medial surface which could be: 1) the exact approximation, or 2) faces that only define a complete detached shape. Our code enables cutting with the surface mesh. The domain can be cut with level set([openVDB](https://github.com/AcademySoftwareFoundation/openvdb.git)) or direct mesh cutting([MCUT](https://github.com/cutdigital/mcut.git)). For more information, pelease refer to our paper.
+This respository contains the code for the paper "Simulating brittle fracture with material points". The code uses voronoi diagram to approximate a medial surface from damaged points cloud. Although the code is used to extract crack for brittle fracture, it could nevertheless be used to approximate the medial surface of any shape with a particle representation. The input points have their coordinates(x,y,z), and phase filed value(0-1) where 0 represents a healthy point and 1 is a fully damaged point. The output is a surface approximating the medial surface which could be: 1) the exact approximation, or 2) faces that only define a complete detached shape. The code also enables cutting with non-manifold mesh. The domain can be cut with level set([openVDB](https://github.com/AcademySoftwareFoundation/openvdb.git)) or direct mesh cutting([MCUT](https://github.com/cutdigital/mcut.git)). For more information, please refer to our paper.
 
 # How to build?
 
@@ -35,6 +35,6 @@
 * Mode 1 test 
 ![](./example/mode1/mode1.png)
 
-* Glass(Our algorithm is robust with excessive damage region.)
+* Glass(The algorithm is robust with excessive damage region.)
 ![](./example/glass/glass.png)
 
