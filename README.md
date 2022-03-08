@@ -35,6 +35,6 @@
 * Mode 1 test 
 ![](./example/mode1/mode1.png)
 
-* Glass
+* Glass(Our algorithm is robust with excessive damage region.)
 ![](./example/glass/glass.png)
 
