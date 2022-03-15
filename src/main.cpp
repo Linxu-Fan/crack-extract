@@ -197,6 +197,12 @@ void postprocessing(parametersSim* parameters, std::tuple<bool, meshObjFormat,  
 
 int main(int argc, char *argv[])
 {
+    if(argc != 2)
+    {
+        fprintf(stderr, "error: program expects one argument, which is the path to a config text file.\n");
+        std::exit(1);
+    }
+
     std::vector<std::string> inputPara;
     std::string inputFile = argv[1];
     std::ifstream inf;
