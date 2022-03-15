@@ -17,8 +17,6 @@ void toTrimesh(trimesh::TriMesh& tm, const GenericMesh& gm)
     }
 }
 
-
-
 // convert a mesh with chevron marks to openvdb grid
 openvdb::FloatGrid::Ptr chevronMeshToLevelSetGrid(
     trimesh::TriMesh& chevronMesh,
@@ -29,21 +27,18 @@ openvdb::FloatGrid::Ptr chevronMeshToLevelSetGrid(
     // copy vertices and triangles
 
     std::vector<openvdb::Vec3f> myMeshPoints;
-    for (int i = 0; i < chevronMesh.vertices.size(); ++i) 
-    {
+    for (int i = 0; i < chevronMesh.vertices.size(); ++i) {
         myMeshPoints.push_back(openvdb::Vec3f(chevronMesh.vertices[i][0] + com[0], chevronMesh.vertices[i][1] + com[1], chevronMesh.vertices[i][2] + com[2]));
     }
 
     std::vector<openvdb::Vec3I> myMeshTris;
-    for (int i = 0; i < chevronMesh.faces.size(); ++i) 
-    {
+    for (int i = 0; i < chevronMesh.faces.size(); ++i) {
         myMeshTris.push_back(openvdb::Vec3I(chevronMesh.faces[i][0], chevronMesh.faces[i][1], chevronMesh.faces[i][2]));
     }
 
     // convert crack surface mesh to level set
 
     openvdb::math::Transform::Ptr transform = openvdb::math::Transform::createLinearTransform(voxelSize);
-
 
     // create a float grid containing the level representation of the sphere mesh
     openvdb::FloatGrid::Ptr myCrackMeshLevelSetGrid = openvdb::tools::meshToLevelSet<openvdb::FloatGrid>(
@@ -59,11 +54,8 @@ openvdb::FloatGrid::Ptr chevronMeshToLevelSetGrid(
         std::exit(1);
     }
 
-
     return myCrackMeshLevelSetGrid;
 }
-
-
 
 openvdb::FloatGrid::Ptr crackSurfaceMeshToLevelSetGrid(
     const GenericMesh& crackSurfaceMesh,
@@ -104,7 +96,7 @@ openvdb::FloatGrid::Ptr crackSurfaceMeshToLevelSetGrid(
         myMeshPoints,
         myMeshTris);
 
-#else 
+#else
 
     //note that we first create an [unsigned] level set here
     openvdb::FloatGrid::Ptr myCrackMeshLevelSetGrid = openvdb::tools::meshToUnsignedDistanceField<openvdb::FloatGrid>(
@@ -114,15 +106,7 @@ openvdb::FloatGrid::Ptr crackSurfaceMeshToLevelSetGrid(
         std::vector<openvdb::Vec4I>(),
         3);
 
-
 #endif
-
-
-
-
-
-
-
 
     if (myCrackMeshLevelSetGrid->empty()) {
         fprintf(stderr, "fatal error: grid empty (%s)\n", name.c_str());
@@ -132,15 +116,11 @@ openvdb::FloatGrid::Ptr crackSurfaceMeshToLevelSetGrid(
     std::string fullName = name + "_CrackSurfaceVolGrid";
     myCrackMeshLevelSetGrid->setName(fullName);
 
-
-
-
-
 #ifdef USE_LEVEL_SET_FULLYCUT
 
-    std::cout<<""<<std::endl;
+    std::cout << "" << std::endl;
 
-#else 
+#else
 
     // now, we create a [signed] level set which leads to our crack surface volume.
 
@@ -153,21 +133,9 @@ openvdb::FloatGrid::Ptr crackSurfaceMeshToLevelSetGrid(
         iter.setValue(value);
     }
 
-
 #endif
 
-
-
-
-
-
-
-
     myCrackMeshLevelSetGrid->setGridClass(openvdb::GRID_LEVEL_SET);
-
-
-
-
 
     return myCrackMeshLevelSetGrid;
 }
@@ -203,7 +171,6 @@ void writeVDBMesh(const char* filename, openvdb::tools::VolumeToMesh& mesh)
 
     file.close();
 }
-
 
 // watertight mesh
 openvdb::FloatGrid::Ptr meshToVDBLevelSetGrid(
@@ -319,8 +286,6 @@ void cleanGenericMesh(GenericMesh& gm)
     }
 }
 
-
-
 std::vector<std::vector<std::array<double, 2>>> to2Dpoly(std::vector<Eigen::Vector3d>& poly3d)
 {
     const Eigen::Vector3d& v0 = poly3d[0];
@@ -361,7 +326,6 @@ std::vector<std::vector<std::array<double, 2>>> to2Dpoly(std::vector<Eigen::Vect
 
     return poly2d;
 }
-
 
 #include "crackExtraction/polygon_triangulate.hpp"
 
@@ -407,10 +371,10 @@ void triangulateGenericMesh(GenericMesh& m)
             // Run tessellation using earcut lib
             // Three subsequent indices form a triangle. Output triangles are clockwise.
             //
-//    There are N-3 triangles in the triangulation.
-//
-//    For the first N-2 triangles, the first edge listed is always an
-//    internal diagonal.
+            //    There are N-3 triangles in the triangulation.
+            //
+            //    For the first N-2 triangles, the first edge listed is always an
+            //    internal diagonal.
 
             std::vector<uint32_t> indices = mapbox::earcut<uint32_t>(poly2D);
 

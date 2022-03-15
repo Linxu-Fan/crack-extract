@@ -4,10 +4,9 @@
 
 #include <cmath>
 
-#include "crackExtraction/utils.h"
 #include "crackExtraction/particles.h"
+#include "crackExtraction/utils.h"
 #include "crackExtraction/weights.h"
-
 
 // calculate the damage gradient of all particles and grid nodes.
 void calDamageGradient(std::vector<Particle>*, parametersSim, double, std::map<int, int>*, std::vector<Grid>*);

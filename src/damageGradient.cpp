@@ -1,6 +1,5 @@
 ﻿#include "crackExtraction/damageGradient.h"
 
-
 // calculate the damage gradient of all particles and grid nodes.
 void calDamageGradient(std::vector<Particle>* particles, parametersSim param, double dx, std::map<int, int>* gridMap, std::vector<Grid>* nodesVec)
 {
@@ -67,8 +66,8 @@ void calDamageGradient(std::vector<Particle>* particles, parametersSim param, do
 
     // calculate grid node's damage gradient. This gives the exact value.
     for (int g = 0; g < (*nodesVec).size(); g++) {
-		Eigen::Vector3d weightVec = { 0.125, 0.75, 0.125 };
-		Eigen::Vector3d posVec = { dx, 0, -dx };
+        Eigen::Vector3d weightVec = { 0.125, 0.75, 0.125 };
+        Eigen::Vector3d posVec = { dx, 0, -dx };
 
         for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 3; j++) {
@@ -78,7 +77,7 @@ void calDamageGradient(std::vector<Particle>* particles, parametersSim param, do
 
                     if ((*gridMap).find(ID) != (*gridMap).end()) {
                         int eid = (*gridMap)[ID];
-						Eigen::Vector3d posD = { posVec[i], posVec[j], posVec[k] };
+                        Eigen::Vector3d posD = { posVec[i], posVec[j], posVec[k] };
                         (*nodesVec)[g].deltaDi += weight / (dx * dx / 4) * (*nodesVec)[eid].Di / (*nodesVec)[eid].sw * posD;
                     };
                 };
@@ -117,31 +116,30 @@ Eigen::Vector3d calDamageGradientPoint(Eigen::Vector3d pos, parametersSim param,
     return deltaPoint;
 };
 
-
 // calculate the damage value of any give point
 double calDamageValuePoint(Eigen::Vector3d pos, parametersSim param, double dx, std::map<int, int>* gridMap, std::vector<Grid>* nodesVec)
 {
-	double dpValue = 0;
-	Eigen::Vector3d base = (pos) / dx - Eigen::Vector3d::Constant(0.5);
-	Eigen::Vector3i ppIndex = base.cast<int>();
+    double dpValue = 0;
+    Eigen::Vector3d base = (pos) / dx - Eigen::Vector3d::Constant(0.5);
+    Eigen::Vector3i ppIndex = base.cast<int>();
 
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			for (int k = 0; k < 3; k++) {
-				int ID = calculateID(ppIndex[0] + i, ppIndex[1] + j, ppIndex[2] + k, param.length, dx);
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            for (int k = 0; k < 3; k++) {
+                int ID = calculateID(ppIndex[0] + i, ppIndex[1] + j, ppIndex[2] + k, param.length, dx);
 
-				struct weightAndDreri WD = calWeight(dx, (pos));
-				Eigen::MatrixXd weightPoint = WD.weight;
-				double weight = weightPoint(0, i) * weightPoint(1, j) * weightPoint(2, k);
+                struct weightAndDreri WD = calWeight(dx, (pos));
+                Eigen::MatrixXd weightPoint = WD.weight;
+                double weight = weightPoint(0, i) * weightPoint(1, j) * weightPoint(2, k);
 
-				if ((*gridMap).find(ID) != (*gridMap).end()) {
-					int eid = (*gridMap)[ID];
-					Eigen::Vector3d posD = (pos)-(*nodesVec)[eid].posIndex.cast<double>() * dx;
-					dpValue += weight  * (*nodesVec)[eid].Di;
-				};
-			};
-		};
-	};
+                if ((*gridMap).find(ID) != (*gridMap).end()) {
+                    int eid = (*gridMap)[ID];
+                    Eigen::Vector3d posD = (pos) - (*nodesVec)[eid].posIndex.cast<double>() * dx;
+                    dpValue += weight * (*nodesVec)[eid].Di;
+                };
+            };
+        };
+    };
 
-	return dpValue;
+    return dpValue;
 };

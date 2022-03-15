@@ -2,30 +2,22 @@
 
 #define EXTRACTCRACK_H
 
-#include "crackExtraction/utils.h"
 #include "crackExtraction/damageGradient.h"
 #include "crackExtraction/particles.h"
+#include "crackExtraction/utils.h"
 #include "crackExtraction/weights.h"
 #include "voro++.hh"
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
+#include <set>
 #include <sstream>
 #include <string>
-#include <algorithm>
-#include <set>
-#include <iterator>
-
-
-
-
-
-
-  
 
 // read obj file
 struct meshObjFormat readObj(std::string path);
-
 
 // Struct of particles
 struct Point {
@@ -54,7 +46,6 @@ struct Point {
     {
     }
 };
-
 
 // User-defined wall of Voro++
 class wallShell : public voro::wall {
@@ -211,51 +202,33 @@ Eigen::Vector3i findNearestBoundaryNode(int, std::vector<Point>*, std::vector<in
 // Judge if a pair of points are on different sides of a crack
 bool ifTwoSides(int, int, std::vector<Point>*, std::vector<int>*, std::vector<Eigen::Vector3i>*, std::map<int, int>*, parametersSim, std::vector<int>*);
 
-
-
 // Extract the crack surface
 // if a crack surface is found, the crack surface with partial cut, the crack surface with full cut,  each fragment volume in .obj format
-std::tuple<bool, meshObjFormat, meshObjFormat, std::vector<meshObjFormat> >  extractCrackSurface(std::vector<Particle>* particlesRaw, struct parametersSim param);
-
-
-
-
-
+std::tuple<bool, meshObjFormat, meshObjFormat, std::vector<meshObjFormat>> extractCrackSurface(std::vector<Particle>* particlesRaw, struct parametersSim param);
 
 ////////////////////////////////
 // cut objects with ftetwild
 ////////////////////////////////
-void cutObject(std::string nameObject, std::vector<meshObjFormat>* fragments, std::vector<meshObjFormat>* fragmentCollision ); // 1) the object's name, ie. bunny_F1, 2) fragments
-
+void cutObject(std::string nameObject, std::vector<meshObjFormat>* fragments, std::vector<meshObjFormat>* fragmentCollision); // 1) the object's name, ie. bunny_F1, 2) fragments
 
 ////////////////////////////////
 // triangulate a polygon mesh with libigl
 ////////////////////////////////
 void triangulate_polygonMesh(meshObjFormat* polygonMesh);
 
-
 ////////////////////////////////
 // intersection of two objects with mcut
 ////////////////////////////////
-std::vector<std::pair<meshObjFormat, std::pair<std::set<int> , std::map<int, int> > > > intersection_MCUT(trimesh::TriMesh* collisionMesh, meshObjFormat* fragmentVolumeth);
-
-
+std::vector<std::pair<meshObjFormat, std::pair<std::set<int>, std::map<int, int>>>> intersection_MCUT(trimesh::TriMesh* collisionMesh, meshObjFormat* fragmentVolumeth);
 
 ////////////////////////////////
 // upsample a triangle mesh from cleaned ftetwild output
 ////////////////////////////////
-meshObjFormat upsampleMesh(parametersSim param, meshObjFormat *inputMesh);
-
-
+meshObjFormat upsampleMesh(parametersSim param, meshObjFormat* inputMesh);
 
 ////////////////////////////////
 // cut objects with mcut
 ////////////////////////////////
 void cutObject_MCUT(parametersSim param, std::string objectName, meshObjFormat* collisionMeshParent, std::vector<meshObjFormat>* fragments, std::vector<meshObjFormat>* finalFragments);
-
-
-
-
-
 
 #endif
