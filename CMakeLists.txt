@@ -4,24 +4,14 @@ cmake_minimum_required(VERSION 3.11...3.16)
 # Project name and a few useful settings. Other commands can pick up the results
 project(crackExtraction
     VERSION 0.1
-    DESCRIPTION "MPM Fracture Project"
+    DESCRIPTION "Crack extraction project"
     LANGUAGES CXX)
     
-
-
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/modules)
-
-
-
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
-
-
 set(EXTERN_PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/extern)
 
 add_subdirectory(${EXTERN_PROJECTS_DIR})
-
-
 
 set (INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include )
 list (APPEND EXTRA_LIBS  ${MCUT_LIBRARIES} ${TRIMESH_LIBRARIES} ${OPENVDB_LIBRARIES} ${VORO_PLUS_PLUS_LIBRARIES})
