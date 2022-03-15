@@ -1,6 +1,6 @@
 ../example/glass
 particles.txt
 object.obj
-OPENVDB_FULL
+MCUT
 0.0035
 0.00035
