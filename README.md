@@ -1,7 +1,5 @@
 # Extracting crack surfaces from damaged material particles
 
-![](./example/overview.png)
-
 This respository provides an implementation of the crack extraction method that is described in the paper "Simulating brittle fracture with material points" (Sec.6). The extraction method uses a 3D voronoi tessellation to approximate each crack as a medial surface within a damaged material-particle region. 
 
 The code may be used to compute one or more such medial surfaces that are inside of any 3D shape using samples of points inside its volume. Each such point (x, y, z) is associated with a 'damage' scalar value between 0.0 and 1.0, where the value 0.0 represents 'healthy', and 1.0 represents 'fully damaged'. 
