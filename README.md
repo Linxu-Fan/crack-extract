@@ -1,4 +1,4 @@
-# Extracting crack surfaces from damaged material particles
+# Crack surface extraction
 
 This respository provides an implementation of the crack extraction method that is described in the paper "Simulating brittle fracture with material points" (Sec.6). The extraction method uses a 3D voronoi tessellation to approximate each crack as a medial surface within a damaged material-particle region. 
 
