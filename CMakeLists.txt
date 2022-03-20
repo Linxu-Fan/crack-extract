@@ -1,8 +1,6 @@
-# Works with 3.11 and tested through 3.15
 cmake_minimum_required(VERSION 3.11...3.16)
 
-# Project name and a few useful settings. Other commands can pick up the results
-project(crackExtraction
+project(crack-extract
     VERSION 0.1
     DESCRIPTION "Crack extraction project"
     LANGUAGES CXX)
@@ -21,7 +19,7 @@ message(STATUS "EXTRA_LIBS = ${EXTRA_LIBS}")
 message(STATUS "EXTRA_INCLUDES = ${EXTRA_INCLUDES}")
 
 add_executable(
-    crackExtraction 
+    crack-extract 
     src/main.cpp 
     src/utility-functions.cpp
     src/damageGradient.cpp 
@@ -30,11 +28,12 @@ add_executable(
     src/polygon_triangulate.cpp)
 
 if(WIN32)
-    target_compile_options(crackExtraction PRIVATE /bigobj)
+    target_compile_options(crack-extract PRIVATE /bigobj)
 else()
-    target_compile_options(crackExtraction PRIVATE -fmax-errors=1 ) # stop compilation after the first error (makes life a little easier)
+    target_compile_options(crack-extract PRIVATE -fmax-errors=1 ) # stop compilation after the first error (makes life a little easier)
 endif()
-target_compile_features(crackExtraction PRIVATE cxx_std_14 )
-target_include_directories(crackExtraction PRIVATE ${EXTRA_INCLUDES})
-target_link_libraries (crackExtraction ${EXTRA_LIBS}) 
-target_compile_definitions(crackExtraction PUBLIC -DROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}" )
+
+target_compile_features(crack-extract PRIVATE cxx_std_14 )
+target_include_directories(crack-extract PRIVATE ${EXTRA_INCLUDES})
+target_link_libraries (crack-extract ${EXTRA_LIBS}) 
+target_compile_definitions(crack-extract PUBLIC -DROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}" )
