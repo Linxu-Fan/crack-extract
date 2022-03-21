@@ -24,7 +24,7 @@ Refer to the paper for more information.
 4. `cmake -DCMAKE_BUILD_TYPE=Release ..`
 5. Build the executable
     - If you are on Linux 
-        * Run `make -j6 cract-extract` 
+        * Run `make -j6 crack-extract` 
     - else (e.g. Windows)
         * Open generated .sln file in [Visual Studio](https://visualstudio.microsoft.com/vs/older-downloads/)
 6. Setup [fTetWild](https://github.com/wildmeshing/fTetWild.git) (For preprocessing meshes before cutting)
